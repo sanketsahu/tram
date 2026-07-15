@@ -154,12 +154,16 @@ module.exports = config`}</Code>
           <H id="thin">Thin dev server (experimental)</H>
           <P>
             Beyond the plugin, jetplane can serve a pre-built bundle from a ~40 MB no-Metro process
-            with live HMR — for running many environments per machine. This mode is experimental and
-            runs under Bun; it replaces the dev-server role (a separate command), not the Expo CLI.
+            with live HMR — for running many environments per machine. One command sets it up:
           </P>
-          <Code>{`# serve a pre-built bundle to Expo Go — no Metro, ~40 MB, prints a QR
-bun node_modules/jetplane/src/jetplane-serve-thin.ts <projectDir> 8091
-#   scan the QR in Expo Go, then edit app/(tabs)/index.tsx to see live HMR`}</Code>
+          <Code>{`npx jetplane start`}</Code>
+          <P>
+            <code>jetplane start</code> (1) ensures the plugin is in your{' '}
+            <code>metro.config.js</code>, (2) installs dependencies if needed, (3) builds a
+            device-bootable bundle once (running Metro a single time), then (4) serves it from the
+            thin, no-Metro server and prints a QR for Expo Go — edit <code>app/(tabs)/index.tsx</code>{' '}
+            and it hot-reloads. Requires Bun; it replaces the dev-server role, not the Expo CLI.
+          </P>
 
           <H id="benchmark">Benchmark methodology</H>
           <P>

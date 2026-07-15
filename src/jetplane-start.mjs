@@ -1,0 +1,122 @@
+// `jetplane start` — one command for the thin dev server.
+//
+//   1. ensure the transform-cache plugin is wired into metro.config.js
+//   2. ensure dependencies are installed
+//   3. ensure a device-bootable bundle exists for this lockfile (build once via Metro)
+//   4. serve it from the thin, no-Metro server (Bun) + print a QR
+//
+// The thin server + build step are experimental and need Bun; the plugin step alone works
+// on plain Node (that's what `jetplane init` does).
+
+import { spawn, execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import os from 'node:os'
+import crypto from 'node:crypto'
+import { fileURLToPath } from 'node:url'
+
+const HERE = path.dirname(fileURLToPath(import.meta.url))
+const HOME = os.homedir()
+const log = (m) => console.log(`jetplane: ${m}`)
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const has = (cmd) => { try { execSync(`command -v ${cmd}`, { stdio: 'ignore' }); return true } catch { return false } }
+
+const DEFAULT_CONFIG = `const { getDefaultConfig } = require('expo/metro-config');
+
+const config = getDefaultConfig(__dirname);
+config.transformerPath = require.resolve('jetplane/transformer');
+config.cacheStores = [];
+
+module.exports = config;
+`
+
+// 1. ensure metro.config.js wires in the plugin
+function ensureConfig(dir) {
+  const cfg = path.join(dir, 'metro.config.js')
+  if (!fs.existsSync(cfg)) { fs.writeFileSync(cfg, DEFAULT_CONFIG); log('created metro.config.js with the jetplane plugin'); return }
+  let s = fs.readFileSync(cfg, 'utf8')
+  if (s.includes('jetplane/transformer')) { log('plugin already in metro.config.js'); return }
+  const m = s.match(/module\.exports\s*=\s*([A-Za-z_$][\w$]*)/)
+  if (m) {
+    const v = m[1]
+    s = s.replace(m[0], `${v}.transformerPath = require.resolve('jetplane/transformer');\n${v}.cacheStores = [];\n\n${m[0]}`)
+    fs.writeFileSync(cfg, s)
+    log('added the jetplane plugin to metro.config.js')
+  } else {
+    log("could not auto-edit metro.config.js — add:\n  config.transformerPath = require.resolve('jetplane/transformer')\n  config.cacheStores = []")
+  }
+}
+
+// 2. ensure deps
+function ensureInstalled(dir) {
+  if (fs.existsSync(path.join(dir, 'node_modules'))) return
+  const inst = has('bun') ? 'bun install' : has('pnpm') ? 'pnpm install' : 'npm install'
+  log(`installing dependencies (${inst.split(' ')[0]})...`)
+  execSync(inst, { cwd: dir, stdio: 'inherit' })
+}
+
+function lockHash(dir) {
+  for (const f of ['bun.lock', 'bun.lockb', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock']) {
+    const p = path.join(dir, f)
+    if (fs.existsSync(p)) return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex').slice(0, 16)
+  }
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'))
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies }
+    return crypto.createHash('sha256').update(Object.keys(deps).sort().map((k) => k + deps[k]).join()).digest('hex').slice(0, 16)
+  } catch { return crypto.createHash('sha256').update(dir).digest('hex').slice(0, 16) }
+}
+
+async function get(url, ms, headers = {}) {
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms)
+  try { const r = await fetch(url, { signal: c.signal, headers }); return { ok: r.ok, body: await r.text() } }
+  catch { return { ok: false, body: '' } } finally { clearTimeout(t) }
+}
+
+// 3. build the device-bootable bundle by capturing it from Metro once (cached per lockHash)
+async function ensureBundle(dir, platform = 'ios') {
+  const imageDir = path.join(HOME, '.jetplane', 'images', lockHash(dir))
+  if (fs.existsSync(path.join(imageDir, `main.${platform}.bundle`)) && fs.existsSync(path.join(imageDir, 'manifest-multipart.bin'))) {
+    log(`bundle cached (${path.relative(HOME, imageDir)})`); return imageDir
+  }
+  fs.mkdirSync(imageDir, { recursive: true })
+  log('building bundle (running Metro once — this is the one-time build)...')
+  const port = 8099
+  try { execSync(`lsof -tiTCP:${port} -sTCP:LISTEN | xargs kill -9`, { stdio: 'ignore' }) } catch {}
+  const metro = spawn('npx', ['expo', 'start', '--port', String(port)], { cwd: dir, env: { ...process.env, CI: '1' }, detached: true, stdio: 'ignore' })
+  const kill = () => { try { process.kill(-metro.pid, 'SIGKILL') } catch {} }
+  try {
+    const base = `http://localhost:${port}/`
+    const dl = Date.now() + 180000
+    let up = false
+    while (Date.now() < dl) { const r = await get(base + 'status', 2000); if (r.ok && r.body.includes('running')) { up = true; break } await sleep(500) }
+    if (!up) throw new Error('Metro did not start')
+    const json = (await get(base, 20000, { 'expo-platform': platform, Accept: 'application/expo+json,application/json' })).body
+    fs.writeFileSync(path.join(imageDir, 'manifest.json'), json)
+    const multi = (await get(base, 20000, { 'expo-platform': platform, 'expo-protocol-version': '1', Accept: 'multipart/mixed,application/expo+json,application/json' })).body
+    fs.writeFileSync(path.join(imageDir, 'manifest-multipart.bin'), multi)
+    const url = JSON.parse(json).launchAsset.url
+    log('bundling (first build may take a moment)...')
+    const bundle = await get(url, 180000)
+    if (!bundle.ok) throw new Error('bundle request failed')
+    fs.writeFileSync(path.join(imageDir, `main.${platform}.bundle`), bundle.body)
+    log(`bundle built -> ${path.relative(HOME, imageDir)}`)
+    return imageDir
+  } finally { kill(); await sleep(500) }
+}
+
+// 4. serve it from the thin server (Bun)
+function serveThin(dir, port, imageDir) {
+  if (!has('bun')) { console.error('jetplane: the thin server needs Bun — install it from https://bun.sh, then re-run.'); process.exit(1) }
+  const thin = path.join(HERE, 'jetplane-serve-thin.ts')
+  const child = spawn('bun', [thin, dir, String(port), imageDir], { stdio: 'inherit' })
+  child.on('exit', (c) => process.exit(c ?? 0))
+}
+
+export async function start({ dir = process.cwd(), port = 8091 } = {}) {
+  log(`starting in ${dir}`)
+  ensureConfig(dir)
+  ensureInstalled(dir)
+  const imageDir = await ensureBundle(dir)
+  serveThin(dir, port, imageDir)
+}

@@ -47,19 +47,20 @@ node ../../src/jetplane-stats.mjs   # hit-rate for the last bundle (reset with: 
 
 ## Thin, no-Metro dev server + HMR (experimental)
 
-Capture a bundle once (fast — warm cache), then serve it from the thin server:
+One command (needs [Bun](https://bun.sh)):
 
 ```bash
-# capture the device-bootable bundle + manifest (build phase, once)
-#   done automatically by the flow in bench/MEMORY-FUSION.md → ~/.jetplane/images/expo54/
-
-# serve it — no Metro, ~40–68 MB, prints a QR
-bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
+npx jetplane start
 ```
 
-Scan the QR in Expo Go (or `exp://localhost:8091` on the simulator). Then edit
-`bench/expo-app-54/app/(tabs)/index.tsx` and save — the screen hot-reloads via React
-Refresh, served entirely from the thin process.
+`jetplane start` (1) ensures the plugin is wired into `metro.config.js`, (2) installs deps
+if needed, (3) builds a device-bootable bundle once (runs Metro a single time), then (4)
+serves it from the thin, no-Metro process (~40 MB) and prints a QR.
+
+Scan the QR in Expo Go (or `exp://localhost:8091` on the simulator). Edit
+`app/(tabs)/index.tsx` and save — the screen hot-reloads via React Refresh, served
+entirely from the thin process. The bundle is cached per lockfile under `~/.jetplane`;
+delete it to force a rebuild.
 
 ## Run the benchmarks
 
