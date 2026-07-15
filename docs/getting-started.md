@@ -4,10 +4,24 @@
 
 Requires Expo SDK 54+ and Node 20+.
 
+Install jetplane as a dev dependency — Metro resolves `jetplane/transformer` from the
+project, so a local install is required (a global `-g` install is optional sugar for the
+CLI, not a substitute). Run the CLI with `npx` or an npm script.
+
 ```bash
-npm install jetplane
+npm install -D jetplane
 npx jetplane init       # wires the transform cache into metro.config.js
 npx expo start          # your normal flow — now cross-project cached
+```
+
+## The CLI at a glance
+
+```bash
+npx jetplane init       # just wire the cache into metro.config.js (plain Node)
+npx jetplane serve      # thin no-Metro server for an already-set-up project (needs Bun)
+npx jetplane dev        # unified: init + install + build + serve — for a fresh project
+                        #   ('jetplane start' is an alias of 'dev')
+npx jetplane            # no argument → prints help
 ```
 
 `jetplane init` writes (or tells you to add) two lines:
@@ -50,10 +64,10 @@ node ../../src/jetplane-stats.mjs   # hit-rate for the last bundle (reset with: 
 One command (needs [Bun](https://bun.sh)):
 
 ```bash
-npx jetplane start
+npx jetplane dev        # 'jetplane start' is an alias
 ```
 
-`jetplane start` (1) ensures the plugin is wired into `metro.config.js`, (2) installs deps
+`jetplane dev` (1) ensures the plugin is wired into `metro.config.js`, (2) installs deps
 if needed, (3) builds a device-bootable bundle once (runs Metro a single time), then (4)
 serves it from the thin, no-Metro process (~40 MB) and prints a QR.
 
