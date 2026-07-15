@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
+// Family-site logos are loaded from their own domains, so they stay in sync when those
+// sites update. RapidNative has no published logo URL, so it stays vendored.
 const RELATED = [
-  { name: 'Lifo', href: 'https://lifo.sh', logo: '/logos/lifo.svg', desc: 'Linux APIs in the browser — run real dev tooling with no VM, no container.' },
-  { name: 'tinbase', href: 'https://tinbase.dev', logo: '/logos/tinbase.svg', desc: 'An open-source, Supabase-compatible backend that runs anywhere — pure TypeScript, Postgres in the browser.' },
+  { name: 'Lifo', href: 'https://lifo.sh', logo: 'https://lifo.sh/brand/lifo-logo.svg', desc: 'Linux APIs in the browser — run real dev tooling with no VM, no container.' },
+  { name: 'tinbase', href: 'https://tinbase.dev', logo: 'https://tinbase.dev/logo.svg', desc: 'An open-source, Supabase-compatible backend that runs anywhere — pure TypeScript, Postgres in the browser.' },
   { name: 'RapidNative', href: 'https://rapidnative.com', logo: '/logos/rapidnative.svg', desc: 'AI that generates production-ready React Native apps and UIs from a prompt.' },
 ]
 
