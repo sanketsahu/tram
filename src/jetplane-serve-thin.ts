@@ -33,23 +33,45 @@ const boundary = multipartRaw ? multipartRaw.split('\r\n')[0].replace(/^--/, '')
 const bundlePath = path.join(imageDir, 'main.ios.bundle')
 const bundle = (globalThis as any).Bun.mmap(bundlePath) as Uint8Array
 
-// HMR: parse the bundle for path->id/deps/inverse-deps, watch app files, push updates
+// web target (optional): an HTML shell + a self-contained web bundle captured alongside
+// the native one. The browser loads the shell, which pulls /jetplane-web.bundle and
+// connects to the SAME /hot socket as the device.
+const webHtmlPath = path.join(imageDir, 'index.html')
+const webBundlePath = path.join(imageDir, 'main.web.bundle')
+const hasWeb = fs.existsSync(webHtmlPath) && fs.existsSync(webBundlePath)
+const webHtml = hasWeb ? fs.readFileSync(webHtmlPath, 'utf8') : ''
+const webBundle = hasWeb ? ((globalThis as any).Bun.mmap(webBundlePath) as Uint8Array) : null
+
+// HMR: parse each bundle for path->id/deps/inverse-deps, watch app files, push updates
 const maps = parseBundle(bundlePath)
+const webMaps = hasWeb ? parseBundle(webBundlePath) : null
 const clients = new Set<any>()
+const clientPlatform = new Map<any, string>() // ws -> 'ios' | 'android' | 'web'
 const lan = lanIP()
 let rev = 0
 async function pushUpdate(absFile: string) {
   if (clients.size === 0) return
-  try {
-    const { modified, added } = await makeUpdate(projectDir, absFile, maps, `http://${lan}:${port}`)
-    rev++
-    const start = JSON.stringify({ type: 'update-start', body: { isInitialUpdate: false } })
-    const upd = JSON.stringify({ type: 'update', body: { revisionId: String(rev), added, modified: [modified], deleted: [] } })
-    const done = JSON.stringify({ type: 'update-done' })
-    for (const ws of clients) { ws.send(start); ws.send(upd); ws.send(done) }
-    console.log(`hmr: pushed ${path.relative(projectDir, absFile)} (module ${modified.module[0]}, +${added.length} new) to ${clients.size} client(s)`)
-  } catch (e: any) {
-    console.log('hmr: skip', path.relative(projectDir, absFile), '-', e.message)
+  // Group connected clients by platform — web and native have different module ids, so
+  // each group gets an update built against its own bundle maps + transform options.
+  const groups = new Map<string, any[]>()
+  for (const ws of clients) {
+    const p = clientPlatform.get(ws) || 'ios'
+    ;(groups.get(p) ?? groups.set(p, []).get(p)!).push(ws)
+  }
+  for (const [platform, wss] of groups) {
+    const m = platform === 'web' ? webMaps : maps
+    if (!m) continue
+    try {
+      const { modified, added } = await makeUpdate(projectDir, absFile, m, `http://${lan}:${port}`, platform)
+      rev++
+      const start = JSON.stringify({ type: 'update-start', body: { isInitialUpdate: false } })
+      const upd = JSON.stringify({ type: 'update', body: { revisionId: String(rev), added, modified: [modified], deleted: [] } })
+      const done = JSON.stringify({ type: 'update-done' })
+      for (const ws of wss) { ws.send(start); ws.send(upd); ws.send(done) }
+      console.log(`hmr[${platform}]: pushed ${path.relative(projectDir, absFile)} (module ${modified.module[0]}, +${added.length} new) to ${wss.length} client(s)`)
+    } catch (e: any) {
+      console.log(`hmr[${platform}]: skip`, path.relative(projectDir, absFile), '-', e.message)
+    }
   }
 }
 // debounced recursive watch of the app source
@@ -100,6 +122,17 @@ const serveOpts = {
     if (url.pathname === '/hot') { if (server.upgrade(req)) return undefined as any }
     if (url.pathname === '/status') return new Response('packager-status:running')
 
+    // web target: the self-contained web bundle, and the HTML shell for a browser.
+    if (hasWeb) {
+      if (url.pathname === '/jetplane-web.bundle') {
+        return new Response(webBundle, { headers: { 'content-type': 'application/javascript', 'x-jetplane-rss-mb': rssMB() } })
+      }
+      const wantsHtml = (req.headers.get('accept') || '').includes('text/html') && !req.headers.get('expo-platform')
+      if (wantsHtml && (url.pathname === '/' || url.pathname === '/index.html')) {
+        return new Response(webHtml, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+      }
+    }
+
     if (url.pathname.endsWith('.bundle')) {
       return new Response(bundle, { headers: { 'content-type': 'application/javascript', 'x-jetplane-rss-mb': rssMB() } })
     }
@@ -123,11 +156,18 @@ const serveOpts = {
   },
   websocket: {
     open(ws: any) { clients.add(ws) },
-    close(ws: any) { clients.delete(ws) },
+    close(ws: any) { clients.delete(ws); clientPlatform.delete(ws) },
     message(ws: any, msg: any) {
       let data: any = {}
       try { data = JSON.parse(String(msg)) } catch { return }
-      if (data.type === 'register-entrypoints') ws.send(JSON.stringify({ type: 'bundle-registered' }))
+      if (data.type === 'register-entrypoints') {
+        // The entry-point URL carries the platform, so we know which bundle maps to
+        // build this client's HMR updates against.
+        const eps = Array.isArray(data.entryPoints) ? data.entryPoints.join(' ') : String(data.entryPoints ?? '')
+        const platform = /platform=web/.test(eps) ? 'web' : /platform=android/.test(eps) ? 'android' : 'ios'
+        clientPlatform.set(ws, platform)
+        ws.send(JSON.stringify({ type: 'bundle-registered' }))
+      }
     },
   },
 }
@@ -170,3 +210,45 @@ try {
 }
 console.log(`  Phone (same Wi-Fi):  ${expUrl}`)
 console.log(`  Simulator:           exp://localhost:${port}`)
+if (hasWeb) console.log(`  Web (browser):       http://localhost:${port}`)
+
+// ── interactive keys, à la `expo start` ──────────────────────────────────────
+const sh = (cmd: string) => { try { execSync(cmd, { stdio: 'ignore' }) } catch {} }
+function openWeb() {
+  if (!hasWeb) { console.log('jetplane: no web bundle was captured for this project (is react-native-web installed?).'); return }
+  console.log(`jetplane: opening web → http://localhost:${port}`)
+  sh(`open "http://localhost:${port}"`)
+}
+function openIOS() {
+  console.log(`jetplane: opening iOS simulator (Expo Go) → exp://localhost:${port}`)
+  sh('open -a Simulator')
+  sh(`xcrun simctl openurl booted "exp://localhost:${port}"`)
+}
+function openAndroid() {
+  console.log(`jetplane: opening Android (Expo Go) → exp://localhost:${port}`)
+  sh(`adb reverse tcp:${port} tcp:${port}`)
+  sh(`adb shell am start -a android.intent.action.VIEW -d "exp://localhost:${port}"`)
+}
+function menu() {
+  const w = hasWeb ? 'w │ web' : 'w │ web (n/a)'
+  console.log(`\n  ${w}    i │ iOS    a │ Android    ? │ help    q │ quit\n`)
+}
+menu()
+
+const stdin: any = process.stdin
+if (stdin.isTTY) {
+  stdin.setRawMode(true)
+  stdin.resume()
+  stdin.setEncoding('utf8')
+  stdin.on('data', (key: string) => {
+    switch (key) {
+      case 'w': openWeb(); break
+      case 'i': openIOS(); break
+      case 'a': openAndroid(); break
+      case '?':
+      case 'h': menu(); break
+      case 'q':
+      case '\u0003': console.log('\njetplane: bye'); process.exit(0)
+    }
+  })
+}

@@ -98,19 +98,24 @@ function freshId(rel) { if (!NEW_IDS.has(rel)) NEW_IDS.set(rel, NEXT_ID++); retu
 // Build the HMR update for a changed file: { modified: [entry], added: [entries] }.
 // `added` carries modules the hot transform pulled in that are NOT in the pre-built
 // bundle (e.g. babel/React-Refresh helpers), each with a fresh id.
-export async function makeUpdate(projectDir, absFile, maps, clientUrlBase) {
+export async function makeUpdate(projectDir, absFile, maps, clientUrlBase, platform = 'ios') {
   const req = createRequire(projectDir + '/')
   const worker = req('metro-transform-worker')
   const { addParamsToDefineCall } = req('metro-transform-plugins')
   const { getDefaultConfig } = req('expo/metro-config')
   const transformerConfig = getDefaultConfig(projectDir).transformer
 
-  // MUST match the options the original bundle was built with (reactCompiler, routerRoot,
-  // engine) or the _dependencyMap indices won't line up with the bundle ids.
+  // MUST match the options the target's bundle was built with (reactCompiler, routerRoot,
+  // engine) or the _dependencyMap indices won't line up with the bundle ids. Native uses
+  // the Hermes profile/engine; web uses neither (it targets the browser JS engine).
+  const isWeb = platform === 'web'
   const options = {
-    dev: true, hot: true, inlinePlatform: true, minify: false, platform: 'ios',
-    type: 'module', unstable_transformProfile: 'hermes-stable',
-    customTransformOptions: { __proto__: null, engine: 'hermes', routerRoot: 'app', reactCompiler: 'true' },
+    dev: true, hot: true, inlinePlatform: true, minify: false, platform,
+    type: 'module',
+    ...(isWeb ? {} : { unstable_transformProfile: 'hermes-stable' }),
+    customTransformOptions: isWeb
+      ? { __proto__: null, routerRoot: 'app', reactCompiler: 'true' }
+      : { __proto__: null, engine: 'hermes', routerRoot: 'app', reactCompiler: 'true' },
     experimentalImportSupport: false, publicPath: '/assets',
   }
   const transform = (file) => worker.transform(transformerConfig, projectDir, file, fs.readFileSync(file), options)

@@ -76,6 +76,21 @@ Scan the QR in Expo Go (or `exp://localhost:8091` on the simulator). Edit
 entirely from the thin process. The bundle is cached per lockfile under `~/.jetplane`;
 delete it to force a rebuild.
 
+### Native and web from one server
+
+The build also captures a self-contained **web** bundle, and the thin server serves both
+targets at once: Expo Go loads the device manifest, and a browser at
+`http://localhost:<port>` gets the web HTML shell + bundle. HMR works for both — each
+connected client is tagged by platform and gets an update built against its own bundle.
+
+The dev server takes interactive keys, like `expo start`:
+
+```
+w │ web      i │ iOS simulator      a │ Android      ? │ help      q │ quit
+```
+
+(If a port is busy the server steps to the next free one and prints the URLs for it.)
+
 ## Run the benchmarks
 
 ```bash
