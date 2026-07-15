@@ -14,7 +14,7 @@ import { randomUUID } from 'node:crypto'
 import { parseBundle, makeUpdate } from './jetplane-hmr.mjs'
 
 const projectDir = process.argv[2]
-const port = parseInt(process.argv[3] || '8091', 10)
+let port = parseInt(process.argv[3] || '8091', 10)
 const imageDir = process.argv[4] || `${process.env.HOME}/.jetplane/images/expo54`
 
 function lanIP(): string {
@@ -91,8 +91,7 @@ function serveAsset(url: URL): Response {
   return new Response('asset not found', { status: 404 })
 }
 
-;(globalThis as any).Bun.serve({
-  port,
+const serveOpts = {
   hostname: '0.0.0.0', // reachable from a phone on the LAN
   fetch(req: Request, server: any) {
     const url = new URL(req.url)
@@ -131,7 +130,31 @@ function serveAsset(url: URL): Response {
       if (data.type === 'register-entrypoints') ws.send(JSON.stringify({ type: 'bundle-registered' }))
     },
   },
-})
+}
+
+// Bind the port, stepping to the next one if it's busy — a machine may already be
+// running other jetplane servers (or the previous one hasn't exited yet).
+const MAX_PORT_TRIES = 20
+let server: any
+for (let attempt = 0; ; attempt++) {
+  try {
+    server = (globalThis as any).Bun.serve({ ...serveOpts, port })
+    break
+  } catch (e: any) {
+    const busy = e?.code === 'EADDRINUSE' || /EADDRINUSE|address already in use|is in use/i.test(String(e?.message ?? e))
+    if (busy && attempt < MAX_PORT_TRIES - 1) {
+      console.log(`jetplane: port ${port} is in use — trying ${port + 1}...`)
+      port++
+      continue
+    }
+    if (busy) {
+      console.error(`jetplane: couldn't find a free port in ${port - attempt}..${port}. Free one up or pass --port <n>.`)
+      process.exit(1)
+    }
+    throw e
+  }
+}
+port = server.port
 
 console.log(`jetplane-serve-thin: :${port}  bundle=${(bundle.length / 1048576).toFixed(1)}MB mmap'd  idleRSS=${rssMB()}MB (no Metro)`)
 

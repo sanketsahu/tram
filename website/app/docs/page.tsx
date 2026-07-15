@@ -82,6 +82,22 @@ module.exports = config`}</Code>
             reuses it, so cold bundles stop re-transforming <code>node_modules</code>. Requires
             Expo SDK 54+, Node 20+.
           </P>
+          <P>
+            <strong>Want the low-memory dev server too?</strong> One command does the whole
+            fresh-project setup — wire the plugin, install deps, build the bundle once, then serve it
+            from a ~40 MB no-Metro process with live HMR (needs <a className="text-brand hover:text-brand-hover" href="https://bun.sh">Bun</a>):
+          </P>
+          <Code>{`npx jetplane dev`}</Code>
+          <P>
+            Scan the QR in Expo Go and edit <code>app/(tabs)/index.tsx</code> — it hot-reloads,
+            served entirely from the thin process. If the port is busy it steps to the next free one.
+            Three commands, from least to most:{' '}
+            <code>jetplane init</code> (wire the cache only),{' '}
+            <code>jetplane serve</code> (serve an already-set-up project), and{' '}
+            <code>jetplane dev</code> (the unified setup + serve above; <code>jetplane start</code> is
+            an alias). See <a href="#thin" className="text-brand hover:text-brand-hover">Thin dev server</a>{' '}
+            for how it works.
+          </P>
 
           <H id="what">What it is</H>
           <P>
