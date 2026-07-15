@@ -106,8 +106,15 @@ Next.js (web)
 | B | 1,434 | 928 ms | — |
 | **C** (instrumented) | 1,415 | **753 ms** | **1,440 / 1,442 = 99.9%** |
 
-The **4.3× speedup** (3,205 → 753 ms) is explained by the hit count — 99.9% of transforms
-never ran. Warm packed boot is **0.38 ms** (vs Metro's ~3,130 ms cold bundle).
+The **4.3× speedup** (3,205 → 753 ms) is a **warm-cache** result — the first project (A) pays
+the full cold cost to build the cache; later same-dep projects reuse it, so 99.9% of transforms
+never run. Warm packed boot is **0.38 ms** — that's serving an already-built bundle, not
+re-bundling, so it isn't a like-for-like race with Metro's cold build.
+
+> **On transparency:** jetplane isn't trying to beat Metro at cold bundling. It moves the heavy
+> build to pre-warm time, then makes the warm/steady state cheap (memory and reuse) and shares one
+> cache across projects. Read these numbers as *warm-path* and *fleet-cost* wins, not a head-to-head
+> bundler benchmark. It augments Metro; it doesn't replace the Expo CLI.
 
 ### Fleet cost model
 
