@@ -14,14 +14,61 @@ The core idea, validated end-to-end on a real device:
 - **Serve a pre-built bundle from a thin, no-Metro process** (`mmap`'d), with **HMR**
   reconstructed from parsing the bundle + Metro's HMR protocol.
 
-## Results (measured)
+## Benchmark
 
-| | result |
-|---|---|
-| cross-project cache hit-rate (3 separate SDK-54 projects) | **99.9%** (1440/1442) |
-| bundle time, cold → cross-project-warm | **3205 ms → 753 ms** (~4.3×) |
-| thin dev server memory | **~40–68 MB** vs Metro ~325 MB idle / ~2 GB cold |
-| on device (Expo Go) | **boots + live HMR working, no Metro running** |
+Resident memory of the whole dev-server process tree (`ps` RSS), Apple Silicon · macOS 15.
+Full methodology + harnesses: [docs/benchmark.md](docs/benchmark.md) · [bench/](bench/).
+
+### Dev-server memory — MB, lower is better
+
+```
+                        0        250       500       750      1000
+tram (thin, no Metro)
+  idle   40  ▇
+  peak   68  ▇▇
+Metro (Expo)
+  idle  325  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇
+  peak 2018  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇⟩  (off axis — cold-bundle spike)
+Vite (web)
+  idle  255  ▇▇▇▇▇▇▇▇▇▇▇
+  peak  255  ▇▇▇▇▇▇▇▇▇▇▇
+Next.js (web)
+  idle  851  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇
+  peak  853  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇
+```
+
+| dev server | idle | peak |
+|---|---:|---:|
+| **tram** (thin serve, no Metro) | **40 MB** | **68 MB** |
+| Metro (Expo) | 325 MB | **2,018 MB** (cold-bundle spike) |
+| Vite (web) | 255 MB | 255 MB |
+| Next.js (web, Turbopack) | 851 MB | 853 MB |
+
+### Cross-project cache — 3 separate SDK-54 projects, same deps
+
+| project | modules | bundle time | cache hit-rate |
+|---|---:|---:|---:|
+| A (cold — builds the cache) | 1,436 | 3,205 ms | — |
+| B | 1,434 | 928 ms | — |
+| **C** (instrumented) | 1,415 | **753 ms** | **1,440 / 1,442 = 99.9%** |
+
+The **4.3× speedup** (3,205 → 753 ms) is explained by the hit count — 99.9% of transforms
+never ran. Warm packed boot is **0.38 ms** (vs Metro's ~3,130 ms cold bundle).
+
+### Fleet cost model
+
+- **tram:** ~40–55 MB × N + one shared transform service (~150 MB, once)
+- **Metro:** ~325 MB × N idle · ~2,018 MB × N during cold bundles
+
+For 24 environments: **~1.4 GB (tram)** vs **~7.8 GB idle / up to ~48 GB spiking (Metro)**.
+
+Validated end-to-end on a real device (Expo Go, SDK 54): boots from the thin no-Metro
+server, **live HMR working**.
+
+## Website & docs
+
+- Landing page + interactive benchmark chart: [`website/`](website/) (Next.js + shadcn/radix + Tailwind)
+- Documentation: [`docs/`](docs/) — [getting started](docs/getting-started.md) · [architecture](docs/architecture.md) · [benchmark](docs/benchmark.md)
 
 ## Layout
 
