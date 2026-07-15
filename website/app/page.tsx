@@ -4,6 +4,7 @@ import { SiteNav } from '@/components/site-nav'
 import { BenchmarkChart } from '@/components/benchmark-chart'
 import { Comparison } from '@/components/comparison'
 import { Logo } from '@/components/logo'
+import { SiteFooter } from '@/components/site-footer'
 
 const STATS = [
   { value: '99.9%', label: 'cross-project cache hit-rate', sub: '1,440 / 1,442 modules · 3 separate projects' },
@@ -124,18 +125,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t border-border/60">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-muted-foreground sm:flex-row">
-          <div className="flex items-center gap-2">
-            <Logo size={20} className="rounded-md" /> jetplane — open source (MIT)
-          </div>
-          <div className="flex items-center gap-5">
-            <Link href="/docs" className="hover:text-foreground">Docs</Link>
-            <a href="https://github.com/sanketsahu/jetplane" className="hover:text-foreground">GitHub</a>
-            <a href="https://www.npmjs.com/package/jetplane" className="hover:text-foreground">npm</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

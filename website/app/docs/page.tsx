@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/site-nav'
+import { SiteFooter } from '@/components/site-footer'
 import { Code as Highlight } from '@/components/code'
 
 export const metadata: Metadata = {
@@ -195,6 +196,7 @@ module.exports = config`}</Code>
           </div>
         </article>
       </div>
+      <SiteFooter />
     </>
   )
 }
