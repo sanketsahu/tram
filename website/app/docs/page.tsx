@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/site-nav'
+import { Code as Highlight } from '@/components/code'
 
 export const metadata: Metadata = {
   title: 'Docs — jetplane',
@@ -29,12 +30,8 @@ function H({ id, children }: { id: string; children: React.ReactNode }) {
 function P({ children }: { children: React.ReactNode }) {
   return <p className="mt-4 leading-relaxed text-muted-foreground">{children}</p>
 }
-function Code({ children }: { children: React.ReactNode }) {
-  return (
-    <pre className="mt-4 overflow-x-auto rounded-lg border border-border bg-card/50 p-4 font-mono text-sm text-foreground/90">
-      <code>{children}</code>
-    </pre>
-  )
+async function Code({ children, lang = 'bash' }: { children: string; lang?: string }) {
+  return <Highlight code={String(children).trim()} lang={lang} className="mt-4" />
 }
 
 export default function Docs() {
@@ -70,7 +67,7 @@ npx expo start`}</Code>
           <P>
             <code>jetplane init</code> adds two lines to your Metro config:
           </P>
-          <Code>{`// metro.config.js
+          <Code lang="js">{`// metro.config.js
 const { getDefaultConfig } = require('expo/metro-config')
 
 const config = getDefaultConfig(__dirname)

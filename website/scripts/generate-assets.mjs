@@ -32,13 +32,9 @@ await writeFile(join(ROOT, 'app', 'icon.svg'), LOGO_SVG.trim() + '\n')
 await writeFile(join(ROOT, 'public', 'logo.svg'), LOGO_SVG.trim() + '\n')
 console.log('wrote app/icon.svg, public/logo.svg')
 
-// --- 2. apple touch icon: mark on a dark rounded badge, rasterized with sharp ---------
-const APPLE = 180
-const badge = `<svg width="${APPLE}" height="${APPLE}" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-  <rect width="180" height="180" rx="40" fill="#09090b"/>
-  <g transform="translate(38 38) scale(3.25)">${LOGO_SVG.replace(/<\/?svg[^>]*>/g, '')}</g>
-</svg>`
-await sharp(Buffer.from(badge)).png().toFile(join(ROOT, 'app', 'apple-icon.png'))
+// --- 2. apple touch icon: the badge mark itself, rasterized at 180×180 with sharp -----
+const appleSvg = LOGO_SVG.replace('width="32" height="32"', 'width="180" height="180"')
+await sharp(Buffer.from(appleSvg)).png().toFile(join(ROOT, 'app', 'apple-icon.png'))
 console.log('wrote app/apple-icon.png')
 
 // --- 3. OG card (1200×630) via real-browser screenshot --------------------------------
