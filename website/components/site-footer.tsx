@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { Logo } from '@/components/logo'
+import { ArrowUpRight } from 'lucide-react'
 
 const RELATED = [
-  { name: 'Lifo', desc: 'Linux APIs in the browser', href: 'https://lifo.sh' },
-  { name: 'tinbase', desc: 'Supabase-compatible backend, no Docker', href: 'https://tinbase.dev' },
-  { name: 'RapidNative', desc: 'Expo apps, full-stack in the browser', href: 'https://rapidnative.com' },
+  { name: 'Lifo', href: 'https://lifo.sh', logo: '/logos/lifo.svg', desc: 'Linux APIs in the browser — run real dev tooling with no VM, no container.' },
+  { name: 'tinbase', href: 'https://tinbase.dev', logo: '/logos/tinbase.svg', desc: 'An open-source, Supabase-compatible backend that runs anywhere — pure TypeScript, Postgres in the browser.' },
+  { name: 'RapidNative', href: 'https://rapidnative.com', logo: '/logos/rapidnative.svg', desc: 'AI that generates production-ready React Native apps and UIs from a prompt.' },
 ]
 
 function GitHubIcon() {
@@ -24,34 +24,59 @@ function XIcon() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/60">
-      <div className="mx-auto max-w-6xl space-y-8 px-6 py-12">
-        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:gap-y-3">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Related projects
-          </span>
-          {RELATED.map((p) => (
-            <a key={p.name} href={p.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <span className="font-medium text-foreground">{p.name}</span> — {p.desc}
-            </a>
-          ))}
+    <footer className="border-t border-border">
+      {/* From the same team — related projects */}
+      <div className="border-b border-border px-6 py-12">
+        <div className="mx-auto max-w-6xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">From the same team</p>
+          <h2 className="mt-2 text-lg font-bold tracking-tight text-foreground">Related projects</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            jetplane is built by the makers of these open-source tools and products.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {RELATED.map((p) => (
+              <a
+                key={p.name}
+                href={p.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 rounded-xl border border-border bg-card/40 p-4 transition-colors hover:border-brand/40"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.logo} alt={`${p.name} logo`} width={36} height={36} className="size-9 shrink-0 rounded-md" />
+                <div className="min-w-0">
+                  <span className="inline-flex items-center gap-1 font-semibold text-foreground group-hover:text-brand">
+                    {p.name}
+                    <ArrowUpRight className="size-3.5 text-muted-foreground group-hover:text-brand" />
+                  </span>
+                  <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center">
-          <span className="flex items-center gap-2">
-            <Logo size={18} className="rounded-md" />
-            Core by{' '}
-            <a href="https://x.com/sanketsahu" className="font-medium text-foreground hover:text-brand">
-              Sanket Sahu (@sanketsahu)
+      {/* Base footer */}
+      <div className="px-6 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center text-sm text-muted-foreground">
+          <p>
+            Built by the makers of{' '}
+            <a href="https://rapidnative.com" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4 hover:text-brand">
+              RapidNative
             </a>{' '}
-            · MIT
-          </span>
-          <div className="flex items-center gap-6">
+            in Bangalore · Core:{' '}
+            <a href="https://x.com/sanketsahu" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4 hover:text-brand">
+              Sanket Sahu
+            </a>
+          </p>
+          <div className="flex items-center gap-5">
             <Link href="/docs" className="hover:text-foreground">Docs</Link>
             <a href="https://www.npmjs.com/package/jetplane" className="hover:text-foreground">npm</a>
             <a href="https://x.com/sanketsahu" aria-label="Sanket Sahu on X" className="hover:text-foreground"><XIcon /></a>
             <a href="https://github.com/sanketsahu/jetplane" aria-label="jetplane on GitHub" className="flex items-center hover:text-foreground"><GitHubIcon /></a>
           </div>
+          <p className="text-xs">Open source under MIT · not affiliated with Meta, Expo, or the React Native team.</p>
         </div>
       </div>
     </footer>
