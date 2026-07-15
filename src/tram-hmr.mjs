@@ -8,6 +8,7 @@
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // Parse the bundle's __d defs -> maps. Format: },ID,[d,d,d],"path"
 export function parseBundle(bundlePath) {
@@ -147,7 +148,8 @@ export async function makeUpdate(projectDir, absFile, maps, clientUrlBase) {
 
 // self-test: parse the captured bundle, make an update for (tabs)/index.tsx
 if (process.argv[1] && process.argv[1].endsWith('tram-hmr.mjs')) {
-  const PROJECT = '/Users/sanketsahu/projects/tram/bench/expo-app-54'
+  const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  const PROJECT = process.env.TRAM_PROJECT || path.join(REPO, 'bench', 'expo-app-54')
   const BUNDLE = `${process.env.HOME}/.tram/images/expo54/main.ios.bundle`
   const maps = parseBundle(BUNDLE)
   console.log('parsed modules:', maps.pathToId.size)

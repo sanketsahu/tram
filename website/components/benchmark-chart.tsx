@@ -13,14 +13,14 @@
  * single-process servers; on a linear axis it would flatten everything else, so
  * its bar is drawn CLIPPED (torn end) with its true number.
  *
- * Series colours are CVD-validated on the dark surface (green #16a34a ↔ blue
- * #3b82f6, ΔE ~27 normal / ~5.4 tritan) with position + labels as secondary
- * encoding.
+ * Series colours are CVD-validated on both light and dark surfaces (blue #3b82f6
+ * ↔ amber #d97706, ΔE ~38 normal / ~28 tritan) with position + labels as
+ * secondary encoding.
  */
 import { useState } from 'react'
 
-const IDLE = '#16a34a' // green — idle memory (tram)
-const PEAK = '#3b82f6' // blue — peak memory (tram)
+const IDLE = '#3b82f6' // blue — idle memory (tram)
+const PEAK = '#d97706' // amber — peak memory (tram)
 const IDLE_MUTED = '#6b7280' // grey — idle (others)
 const PEAK_MUTED = '#4b5563' // darker grey — peak (others)
 

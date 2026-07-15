@@ -15,7 +15,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 
-const TOOLCHAIN_PROJECT = process.argv[2] || '/Users/sanketsahu/projects/tram/bench/expo-app'
+const TOOLCHAIN_PROJECT = process.argv[2] || process.cwd()
 const PORT = parseInt(process.argv[3] || '8199', 10)
 
 const require = createRequire(TOOLCHAIN_PROJECT + '/')

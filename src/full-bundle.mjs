@@ -12,8 +12,11 @@ import { createRequire } from 'node:module'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
+import { fileURLToPath } from 'node:url'
 
-const TOOLCHAIN_PROJECT = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const TOOLCHAIN_PROJECT = process.env.TRAM_PROJECT || path.join(REPO, 'bench', 'expo-app')
 const require = createRequire(TOOLCHAIN_PROJECT + '/')
 const babel = require('@babel/core')
 const EXTS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json']
@@ -109,7 +112,7 @@ function scaffold(root) {
   fs.writeFileSync(path.join(root, 'node_modules', 'mylib', 'shout.js'), `exports.shout = (s) => s + '!!!';`)
 }
 
-const SB = '/private/tmp/claude-501/-Users-sanketsahu-projects-tram/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad'
+const SB = path.join(os.tmpdir(), 'tram-fullbundle')
 const rootA = path.join(SB, 'projA')
 const rootB = path.join(SB, 'projB2')
 scaffold(rootA); scaffold(rootB)

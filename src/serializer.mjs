@@ -15,8 +15,11 @@
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
+import { fileURLToPath } from 'node:url'
 
-const TOOLCHAIN_PROJECT = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const TOOLCHAIN_PROJECT = process.env.TRAM_PROJECT || path.join(REPO, 'bench', 'expo-app')
 const require = createRequire(TOOLCHAIN_PROJECT + '/')
 const babel = require('@babel/core')
 
@@ -100,7 +103,7 @@ export function bundle(entry) {
 
 // ---- self-test: build a real graph and EXECUTE it -----------------------
 if (process.argv[1] && process.argv[1].endsWith('serializer.mjs') && !process.argv[2]) {
-  const dir = '/private/tmp/claude-501/-Users-sanketsahu-projects-tram/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad/graph'
+  const dir = path.join(os.tmpdir(), 'tram-graph')
   fs.rmSync(dir, { recursive: true, force: true })
   fs.mkdirSync(path.join(dir, 'util'), { recursive: true })
   fs.writeFileSync(path.join(dir, 'index.ts'), `import { greet } from './greet';\nimport { NAME } from './const';\nglobalThis.__OUT = greet(NAME);`)

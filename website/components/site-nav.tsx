@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { Logo } from '@/components/logo'
 
 function GitHubIcon() {
   return (
@@ -13,7 +15,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid size-6 place-items-center rounded-md bg-brand/15 text-brand">◆</span>
+          <Logo size={24} />
           tram
         </Link>
         <div className="flex items-center gap-5 text-sm text-muted-foreground">
@@ -25,6 +27,7 @@ export function SiteNav() {
           >
             <GitHubIcon /> GitHub
           </a>
+          <ThemeToggle />
         </div>
       </nav>
     </header>

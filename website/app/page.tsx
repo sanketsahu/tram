@@ -56,7 +56,7 @@ export default function Home() {
             of Metro’s ~325 MB idle / ~2 GB cold. Live HMR included.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Button asChild size="lg" className="bg-brand text-black hover:bg-brand-hover">
+            <Button asChild size="lg" className="bg-[#2563eb] text-white hover:bg-[#1d4ed8]">
               <Link href="/docs">Read the docs</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -68,19 +68,8 @@ export default function Home() {
           </code>
         </section>
 
-        {/* stat tiles */}
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {STATS.map((s) => (
-            <div key={s.label} className="rounded-xl border border-border bg-card/40 p-5">
-              <div className="text-3xl font-bold tracking-tight text-brand tabular-nums">{s.value}</div>
-              <div className="mt-1 text-sm font-medium text-foreground">{s.label}</div>
-              <div className="mt-1 text-xs leading-snug text-muted-foreground">{s.sub}</div>
-            </div>
-          ))}
-        </section>
-
-        {/* benchmark */}
-        <section id="benchmark" className="scroll-mt-20 py-20">
+        {/* benchmark — lead with the proof */}
+        <section id="benchmark" className="scroll-mt-20 pb-14">
           <div className="mx-auto mb-8 max-w-2xl text-center">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">The benchmark</h2>
             <p className="mt-3 text-muted-foreground">
@@ -89,6 +78,17 @@ export default function Home() {
             </p>
           </div>
           <BenchmarkChart />
+        </section>
+
+        {/* stat tiles */}
+        <section className="grid grid-cols-2 gap-3 pb-8 sm:grid-cols-4 sm:gap-4">
+          {STATS.map((s) => (
+            <div key={s.label} className="rounded-xl border border-border bg-card/40 p-5">
+              <div className="text-3xl font-bold tracking-tight text-brand tabular-nums">{s.value}</div>
+              <div className="mt-1 text-sm font-medium text-foreground">{s.label}</div>
+              <div className="mt-1 text-xs leading-snug text-muted-foreground">{s.sub}</div>
+            </div>
+          ))}
         </section>
 
         {/* how it works */}

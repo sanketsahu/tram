@@ -1,14 +1,13 @@
 // Tram: cross-project transform caching inside Expo's real (device-bootable) Metro
-// pipeline. Same deps as expo-app-54 -> vendor transforms are REUSED from the shared
-// ~/.tram/tstore (populated when you ran expo-app-54). Only this app's own screens are
-// transformed fresh.
-//
-// Vanilla fallback: delete this file to run stock Expo.
+// pipeline. In a published project this would be:
+//     config.transformerPath = require.resolve('@sanketsahu/tram/transformer')
+// Here (in-repo) we resolve the source relative to this file — no machine-specific paths.
 const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-config.transformerPath = '/Users/sanketsahu/projects/tram/src/tram-transformer.cjs';
-config.cacheStores = [];
+config.transformerPath = path.resolve(__dirname, '../../src/tram-transformer.cjs');
+config.cacheStores = []; // our worker owns caching; disable Metro's root-dependent store
 
 module.exports = config;
