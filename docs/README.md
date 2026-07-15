@@ -1,4 +1,4 @@
-# Tram documentation
+# Jetplane documentation
 
 Low-footprint dev/bundling toolchain for Expo/React Native (and Vite), built for running
 many dev environments per machine. Everything here is measured; the on-device HMR demo is
@@ -10,6 +10,7 @@ real. Research WIP.
 |---|---|
 | [getting-started.md](./getting-started.md) | Run the tooling, reproduce the on-device HMR demo |
 | [architecture.md](./architecture.md) | The vendor/app split, cross-project cache, thin server, HMR — how it fits together |
+| [compatibility.md](./compatibility.md) | Is it a drop-in for the Expo CLI / Metro? The two modes + comparison matrix |
 | [benchmark.md](./benchmark.md) | Methodology + full measured results (the numbers on the site) |
 
 ## The design record (deep dives, in the order they were reasoned out)

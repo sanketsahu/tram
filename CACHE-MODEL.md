@@ -1,4 +1,4 @@
-# Tram — Invalidation & the layered cache model
+# Jetplane — Invalidation & the layered cache model
 
 Answers the two questions that make or break the vendor-image idea:
 1. What happens when we install new packages?

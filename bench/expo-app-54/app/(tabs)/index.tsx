@@ -18,7 +18,7 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">✅ Tram HMR works on device!</ThemedText>
+        <ThemedText type="title">✅ Jetplane HMR works on device!</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

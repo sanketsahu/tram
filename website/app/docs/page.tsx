@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { SiteNav } from '@/components/site-nav'
 
 export const metadata: Metadata = {
-  title: 'Docs — tram',
-  description: 'How tram makes Expo/React Native dev servers cheap: the vendor/app split, cross-project cache, thin no-Metro server, and HMR.',
+  title: 'Docs — jetplane',
+  description: 'How jetplane makes Expo/React Native dev servers cheap: the vendor/app split, cross-project cache, thin no-Metro server, and HMR.',
 }
 
 const SECTIONS = [
@@ -54,7 +54,7 @@ export default function Docs() {
         <article className="min-w-0 max-w-3xl">
           <H id="overview">Overview</H>
           <P>
-            tram is a low-footprint dev/bundling toolchain for Expo/React Native (and Vite), built
+            jetplane is a low-footprint dev/bundling toolchain for Expo/React Native (and Vite), built
             for running many dev environments per machine. It gives React Native a cross-project
             transform cache and a thin, no-Metro dev server, so each environment costs about 40 MB
             instead of Metro’s ~325 MB idle / ~2 GB cold. Everything here is measured; the on-device
@@ -78,7 +78,7 @@ export default function Docs() {
             layers with opposite properties: an immutable <strong>vendor</strong> layer (huge,
             identical across branches, never edited) and a mutable <strong>app</strong> layer (tiny,
             unique, edited constantly). Metro treats them the same — one watcher, one graph, one heap,
-            per process. tram exploits the asymmetry.
+            per process. jetplane exploits the asymmetry.
           </P>
 
           <H id="architecture">Architecture</H>
@@ -86,7 +86,7 @@ export default function Docs() {
             <strong>Cross-project cache.</strong> Transforms are content-addressed by source bytes
             (root-independent), so the same vendor module transforms once and is reused across
             different projects. Metro’s own transform cache keys are root-dependent, so it cannot do
-            this — proven by a second project doubling Metro’s cache instead of reusing it. tram
+            this — proven by a second project doubling Metro’s cache instead of reusing it. jetplane
             injects the cache at Metro’s transformer seam (a custom <code>transformerPath</code>)
             that normalizes the project root out on write and rehydrates it on read.
           </P>
@@ -115,15 +115,15 @@ export default function Docs() {
           </P>
 
           <H id="run">Running it</H>
-          <P>The tram tooling lives in <code>src/</code>. To reproduce the on-device demo:</P>
-          <Code>{`# 1. an Expo SDK 54 app with the tram transformer wired in (bench/expo-app-54)
+          <P>The jetplane tooling lives in <code>src/</code>. To reproduce the on-device demo:</P>
+          <Code>{`# 1. an Expo SDK 54 app with the jetplane transformer wired in (bench/expo-app-54)
 cd bench/expo-app-54 && npx expo start   # first run builds the shared cache
 
 # 2. a second project reuses the cache cross-project (99.9% hits)
 cd bench/expo-app-54-b && npx expo start
 
 # 3. capture a bundle, serve it from the thin no-Metro server + HMR
-bun src/tram-serve-thin.ts bench/expo-app-54 8091
+bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
 #   scan the QR in Expo Go, then edit app/(tabs)/index.tsx to see live HMR`}</Code>
 
           <H id="benchmark">Benchmark methodology</H>
@@ -132,7 +132,7 @@ bun src/tram-serve-thin.ts bench/expo-app-54 8091
             on Apple Silicon / macOS 15. Memory is separated into idle vs peak (Metro’s cold bundle;
             others under first load). Cache hit-rate is measured by the transformer worker’s own
             hit/miss telemetry, reset per bundle. Harnesses and raw results are in{' '}
-            <a className="text-brand hover:text-brand-hover" href="https://github.com/sanketsahu/tram/tree/main/bench">bench/</a>{' '}
+            <a className="text-brand hover:text-brand-hover" href="https://github.com/sanketsahu/jetplane/tree/main/bench">bench/</a>{' '}
             (<code>RESULTS.md</code>, <code>METRO-CACHE-RESULTS.md</code>, <code>PATH2-FINDINGS.md</code>,
             <code>ON-DEVICE-VALIDATION.md</code>).
           </P>
@@ -143,7 +143,7 @@ bun src/tram-serve-thin.ts bench/expo-app-54 8091
             server memory, and live HMR. Remaining: multi-level new-dep + deletion handling in HMR,
             routing HMR transforms through the shared service, the 0.2% worklet path-normalization
             gap, app-layer cache-vary for env inlining, and a clean{' '}
-            <code>tram build</code>/<code>serve</code>/<code>dev</code> command surface.
+            <code>jetplane build</code>/<code>serve</code>/<code>dev</code> command surface.
           </P>
 
           <div className="mt-12 border-t border-border pt-6">

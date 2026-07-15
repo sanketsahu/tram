@@ -1,4 +1,4 @@
-# Tram — First principles
+# Jetplane — First principles
 
 The earlier framing ("which bundler, how to shrink Metro") was optimizing inside the
 wrong box. This document restates the problem from scratch. The measurements are in
@@ -95,7 +95,7 @@ transformed once by whatever is fastest.
 
 ---
 
-## 4. What "Tram" actually is
+## 4. What "Jetplane" actually is
 
 Not "a faster bundler." A **dev runtime built around the immutable/mutable split**:
 
@@ -114,7 +114,7 @@ Not "a faster bundler." A **dev runtime built around the immutable/mutable split
 
 ### Thesis targets (to validate, not yet proven)
 
-| dimension | today (per server, ×N) | Tram thesis |
+| dimension | today (per server, ×N) | Jetplane thesis |
 |---|---|---|
 | disk | 539 MB × N | one shared vendor image + per-branch `src/` (~50-100× less) |
 | files watched | 33,372 × N | ~dozens × N (~1,000× less watch surface) |

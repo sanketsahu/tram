@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tram cache prototype — Vite testbed.
+// Jetplane cache prototype — Vite testbed.
 //
 // Tests the content-addressed transform cache thesis on the REAL vite-app module
 // graph, and measures the states that matter for the "resident service + warm cache"
@@ -21,11 +21,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 // Usage: node cache-bench.mjs [appDir] [entryRelative]
-const APP = process.argv[2] || '/Users/sanketsahu/projects/tram/bench/vite-app'
+const APP = process.argv[2] || '/Users/sanketsahu/projects/jetplane/bench/vite-app'
 const ENTRY = path.join(APP, process.argv[3] || 'src/main.tsx')
 const TAG = path.basename(APP)
-const STORE = `/Users/sanketsahu/projects/tram/prototype/store-${TAG}`
-const PACKED = `/Users/sanketsahu/projects/tram/prototype/base-image-${TAG}.pack`
+const STORE = `/Users/sanketsahu/projects/jetplane/prototype/store-${TAG}`
+const PACKED = `/Users/sanketsahu/projects/jetplane/prototype/base-image-${TAG}.pack`
 
 const require = createRequire(import.meta.url)
 const esbuild = require('esbuild')
@@ -130,7 +130,7 @@ function phasePacked() {
 async function phaseEditOne(files) {
   const appFile = files.find((f) => f.includes('/src/App.tsx')) || files.find((f) => !f.includes('node_modules'))
   const src = fs.readFileSync(appFile, 'utf8')
-  const mutated = src + `\n// tram-edit ${Date.now()}\n`
+  const mutated = src + `\n// jetplane-edit ${Date.now()}\n`
   const loader = loaderFor(appFile)
   const stop = startSampler(); const t0 = now()
   const out = await esbuild.transform(mutated, { loader, format: 'esm', jsx: 'automatic', logLevel: 'silent' })
@@ -146,7 +146,7 @@ async function phaseEditOne(files) {
 // Simulate "new" by mutating a vendor file's bytes so its hash misses the store.
 async function phaseAddOne(files) {
   const target = files.find((f) => f.includes('node_modules')) || files[0]
-  const src = fs.readFileSync(target, 'utf8') + `\n// tram-new ${Date.now()}\n`
+  const src = fs.readFileSync(target, 'utf8') + `\n// jetplane-new ${Date.now()}\n`
   const loader = loaderFor(target)
   const stop = startSampler(); const t0 = now()
   const out = await esbuild.transform(src, { loader, format: 'esm', jsx: 'automatic', logLevel: 'silent' })

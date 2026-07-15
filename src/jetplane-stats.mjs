@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Tally the transform worker's hit/miss telemetry.
-//   node src/tram-stats.mjs          -> print hits/misses/rate
-//   node src/tram-stats.mjs reset    -> clear before a fresh bundle
+//   node src/jetplane-stats.mjs          -> print hits/misses/rate
+//   node src/jetplane-stats.mjs reset    -> clear before a fresh bundle
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-const F = path.join(os.homedir(), '.tram', 'stats.log')
-if (process.argv[2] === 'reset') { fs.mkdirSync(path.dirname(F), { recursive: true }); fs.writeFileSync(F, ''); console.log('tram stats reset'); process.exit(0) }
+const F = path.join(os.homedir(), '.jetplane', 'stats.log')
+if (process.argv[2] === 'reset') { fs.mkdirSync(path.dirname(F), { recursive: true }); fs.writeFileSync(F, ''); console.log('jetplane stats reset'); process.exit(0) }
 
 const s = fs.existsSync(F) ? fs.readFileSync(F, 'utf8') : ''
 const h = (s.match(/H/g) || []).length

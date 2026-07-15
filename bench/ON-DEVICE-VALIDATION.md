@@ -1,14 +1,14 @@
 # On-device validation (Expo Go, SDK 54) — cross-project cache CONFIRMED
 
-Two separate Expo SDK 54 projects, same deps, both using the Tram custom transformer
-worker (`src/tram-transformer.cjs`) via `metro.config.js`. Bundled on a real iPhone
+Two separate Expo SDK 54 projects, same deps, both using the Jetplane custom transformer
+worker (`src/jetplane-transformer.cjs`) via `metro.config.js`. Bundled on a real iPhone
 through Expo Go.
 
 ## Result
 
 | project | modules | bundle time | note |
 |---|---:|---:|---|
-| **A** (`expo-app-54`) | 1436 | **3205 ms** | cold — populated `~/.tram/tstore` |
+| **A** (`expo-app-54`) | 1436 | **3205 ms** | cold — populated `~/.jetplane/tstore` |
 | **B** (`expo-app-54-b`) | 1434 | **928 ms** | different project, same deps -> cache HITS |
 | B incremental (Fast Refresh) | 1 | 23 ms | HMR working |
 
@@ -19,7 +19,7 @@ disk-cache reuse** of the ~1,400 vendor transforms — exactly the goal.
 ## Precise cache attribution (Project C, instrumented worker)
 
 Third separate SDK 54 project, same deps, one screen edited (title). Worker hit/miss
-telemetry (`src/tram-stats.mjs`), counter reset before the bundle:
+telemetry (`src/jetplane-stats.mjs`), counter reset before the bundle:
 
 | project | modules | bundle time | hit-rate |
 |---|---:|---:|---:|
@@ -34,7 +34,7 @@ never ran. Cross-project reuse across THREE separate projects, quantified, on re
 
 ## What this confirms
 
-- The Tram custom-transformer-worker approach delivers **cross-project transform caching
+- The Jetplane custom-transformer-worker approach delivers **cross-project transform caching
   inside Expo's real, device-bootable Metro pipeline** — validated on hardware, not just
   in isolation.
 - Boots and runs in Expo Go (SDK 54); Fast Refresh works (23 ms / 1 module).

@@ -147,10 +147,10 @@ export async function makeUpdate(projectDir, absFile, maps, clientUrlBase) {
 }
 
 // self-test: parse the captured bundle, make an update for (tabs)/index.tsx
-if (process.argv[1] && process.argv[1].endsWith('tram-hmr.mjs')) {
+if (process.argv[1] && process.argv[1].endsWith('jetplane-hmr.mjs')) {
   const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
   const PROJECT = process.env.TRAM_PROJECT || path.join(REPO, 'bench', 'expo-app-54')
-  const BUNDLE = `${process.env.HOME}/.tram/images/expo54/main.ios.bundle`
+  const BUNDLE = `${process.env.HOME}/.jetplane/images/expo54/main.ios.bundle`
   const maps = parseBundle(BUNDLE)
   console.log('parsed modules:', maps.pathToId.size)
   const rel = 'app/(tabs)/index.tsx'

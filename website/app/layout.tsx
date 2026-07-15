@@ -14,18 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 // Set NEXT_PUBLIC_SITE_URL to the deployed origin so OG/canonical URLs are absolute.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tram.dev";
-const TITLE = "tram — low-footprint Expo/React Native dev servers";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://jetplane.dev";
+const TITLE = "jetplane — low-footprint Expo/React Native dev servers";
 const DESCRIPTION =
   "Run many Expo/React Native dev environments per machine. Cross-project transform cache, thin no-Metro dev server, live HMR — ~40 MB per server vs Metro's ~325 MB idle / ~2 GB cold.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: TITLE, template: "%s — tram" },
+  title: { default: TITLE, template: "%s — jetplane" },
   description: DESCRIPTION,
-  applicationName: "tram",
+  applicationName: "jetplane",
   keywords: [
-    "tram", "expo", "react native", "metro", "bundler", "dev server",
+    "jetplane", "expo", "react native", "metro", "bundler", "dev server",
     "hmr", "transform cache", "content-addressed", "monorepo", "memory", "fleet",
   ],
   authors: [{ name: "Sanket Sahu", url: "https://github.com/sanketsahu" }],
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    siteName: "tram",
+    siteName: "jetplane",
     title: TITLE,
     description: DESCRIPTION,
     // og image is app/opengraph-image.png (auto-detected by Next)
@@ -56,13 +56,13 @@ const JSON_LD = {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: "tram",
+      name: "jetplane",
       description: DESCRIPTION,
       inLanguage: "en",
     },
     {
       "@type": "SoftwareApplication",
-      name: "tram",
+      name: "jetplane",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "macOS, Linux",
       description: DESCRIPTION,
@@ -70,7 +70,7 @@ const JSON_LD = {
       author: { "@type": "Person", name: "Sanket Sahu", url: "https://github.com/sanketsahu" },
       license: "https://opensource.org/licenses/MIT",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      sameAs: ["https://github.com/sanketsahu/tram"],
+      sameAs: ["https://github.com/sanketsahu/jetplane"],
     },
   ],
 };

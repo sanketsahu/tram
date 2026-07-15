@@ -11,11 +11,11 @@ import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const APP = '/Users/sanketsahu/projects/tram/bench/expo-app'
-const ROOT_A = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const APP = '/Users/sanketsahu/projects/jetplane/bench/expo-app'
+const ROOT_A = '/Users/sanketsahu/projects/jetplane/bench/expo-app'
 // a REAL second checkout path (some plugins, e.g. reanimated worklets, read the file
 // from disk at `filename`, so root B must actually exist)
-const ROOT_B = '/private/tmp/claude-501/-Users-sanketsahu-projects-tram/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad/rootB'
+const ROOT_B = '/private/tmp/claude-501/-Users-sanketsahu-projects-jetplane/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad/rootB'
 
 const require = createRequire(APP + '/')
 const babel = require('@babel/core')

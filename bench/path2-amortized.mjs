@@ -7,7 +7,7 @@
 
 import { spawn, execSync } from 'node:child_process'
 
-const ROOT = '/Users/sanketsahu/projects/tram'
+const ROOT = '/Users/sanketsahu/projects/jetplane'
 const APP = `${ROOT}/bench/expo-app`
 const VIMG = `${ROOT}/prototype/base-image-metro.pack`
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

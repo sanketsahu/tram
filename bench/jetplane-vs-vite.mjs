@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Measure boot time: plain Vite vs `tram dev`, across cold / warm / cross-project.
+// Measure boot time: plain Vite vs `jetplane dev`, across cold / warm / cross-project.
 // Boot = wall-clock from process spawn to first successful HTTP 200.
 
 import { spawn, execSync } from 'node:child_process'
 import fs from 'node:fs'
 
-const ROOT = '/Users/sanketsahu/projects/tram'
+const ROOT = '/Users/sanketsahu/projects/jetplane'
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function ok(url) {
@@ -44,16 +44,16 @@ clear(`${HEAVY}/node_modules/.vite`)
 R('plain vite: COLD (fresh optimize)', await boot('npm', ['run', 'dev', '--', '--port', '5191', '--strictPort'], HEAVY, 5191), 'builds node_modules/.vite')
 R('plain vite: WARM (2nd run)', await boot('npm', ['run', 'dev', '--', '--port', '5191', '--strictPort'], HEAVY, 5191), 'reuses node_modules/.vite')
 
-console.log('\n--- tram dev ---')
-clear(`${HOME}/.tram/vite`)
-R('tram: COLD (build shared prebundle)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', HEAVY, '--port', '5192'], ROOT, 5192), 'builds ~/.tram/vite/<hash>')
-R('tram: WARM (2nd run, same project)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', HEAVY, '--port', '5192'], ROOT, 5192), 'reuses shared prebundle')
-R('tram: WARM (different project, same deps)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', COPY, '--port', '5193'], ROOT, 5193), 'cross-project reuse = fleet win')
+console.log('\n--- jetplane dev ---')
+clear(`${HOME}/.jetplane/vite`)
+R('jetplane: COLD (build shared prebundle)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', HEAVY, '--port', '5192'], ROOT, 5192), 'builds ~/.jetplane/vite/<hash>')
+R('jetplane: WARM (2nd run, same project)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', HEAVY, '--port', '5192'], ROOT, 5192), 'reuses shared prebundle')
+R('jetplane: WARM (different project, same deps)', await boot('bun', [`${ROOT}/src/cli.ts`, 'dev', COPY, '--port', '5193'], ROOT, 5193), 'cross-project reuse = fleet win')
 
 console.log('\n--- disk ---')
-const shared = dirSize(`${HOME}/.tram/vite`)
+const shared = dirSize(`${HOME}/.jetplane/vite`)
 const perProj = dirSize(`${HEAVY}/node_modules/.vite`)
-console.log(`  ~/.tram/vite (shared across ALL same-dep projects): ${(shared / 1024).toFixed(1)} MB`)
+console.log(`  ~/.jetplane/vite (shared across ALL same-dep projects): ${(shared / 1024).toFixed(1)} MB`)
 console.log(`  heavy-app/node_modules/.vite (per project, plain) : ${(perProj / 1024).toFixed(1)} MB`)
 
 console.log('\nsummary:', JSON.stringify(results))

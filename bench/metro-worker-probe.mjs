@@ -5,7 +5,7 @@
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
 
-const APP = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const APP = '/Users/sanketsahu/projects/jetplane/bench/expo-app'
 const require = createRequire(APP + '/')
 const { getDefaultConfig } = require('expo/metro-config')
 const worker = require('metro-transform-worker')

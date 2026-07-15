@@ -1,4 +1,4 @@
-# Tram — Shared / distributed transform cache
+# Jetplane — Shared / distributed transform cache
 
 Extends `CACHE-MODEL.md`. The global content-addressed transform store (H1) does not
 have to be local. It can be tiered up to an org cache and a global CDN, so a transform
@@ -70,7 +70,7 @@ The cache key must hash the **full input closure**, or entries collide unsafely:
 ```
 key = hash(
   normalizedSourceBytes,          // path-normalized per §0
-  transformerVersion,             // Tram's transformer identity
+  transformerVersion,             // Jetplane's transformer identity
   babelPluginVersionsAndConfig,   // every plugin + its config
   options                         // platform × engine × dev/prod × reactCompiler × ...
 )
@@ -122,7 +122,7 @@ public registry artifact.
 ## 6. Positioning (do not overclaim)
 
 This does **not** replace npm. npm remains the source of truth and the provenance anchor
-you verify against; you still need the raw bytes to reproduce and check. Tram's shared
+you verify against; you still need the raw bytes to reproduce and check. Jetplane's shared
 cache is a **transform + resolution acceleration and distribution layer in front of
 npm** — "Nix cache for JS/RN transforms, served like esm.sh." The dependency on npm is
 what makes it safe: you can always re-derive and verify against the registry.

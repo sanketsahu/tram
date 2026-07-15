@@ -7,7 +7,7 @@
 import { spawn, execSync } from 'node:child_process'
 import fs from 'node:fs'
 
-const ROOT = '/Users/sanketsahu/projects/tram'
+const ROOT = '/Users/sanketsahu/projects/jetplane'
 const APP = process.argv[2] || 'vite-app'
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -83,20 +83,20 @@ const appDir = `${ROOT}/bench/${APP}`
 const copyDir = `${ROOT}/bench/${APP}-copy`
 const results = []
 
-console.log(`\n=== boot-to-loaded: plain Vite vs tram  (app=${APP}) ===`)
+console.log(`\n=== boot-to-loaded: plain Vite vs jetplane  (app=${APP}) ===`)
 console.log('\n--- plain Vite ---')
 clear(`${appDir}/node_modules/.vite`)
 results.push(await measure('plain vite: COLD', 'npm', ['run', 'dev', '--', '--port', '5191', '--strictPort'], appDir, 5191, 'fresh'))
 results.push(await measure('plain vite: WARM (2nd run)', 'npm', ['run', 'dev', '--', '--port', '5191', '--strictPort'], appDir, 5191, 'reuse .vite'))
 
-console.log('\n--- tram dev ---')
-clear(`${HOME}/.tram/vite`)
-results.push(await measure('tram: COLD', 'bun', [`${ROOT}/src/cli.ts`, 'dev', appDir, '--port', '5192'], ROOT, 5192, 'build shared'))
-results.push(await measure('tram: WARM (2nd run, same project)', 'bun', [`${ROOT}/src/cli.ts`, 'dev', appDir, '--port', '5192'], ROOT, 5192, 'reuse shared'))
+console.log('\n--- jetplane dev ---')
+clear(`${HOME}/.jetplane/vite`)
+results.push(await measure('jetplane: COLD', 'bun', [`${ROOT}/src/cli.ts`, 'dev', appDir, '--port', '5192'], ROOT, 5192, 'build shared'))
+results.push(await measure('jetplane: WARM (2nd run, same project)', 'bun', [`${ROOT}/src/cli.ts`, 'dev', appDir, '--port', '5192'], ROOT, 5192, 'reuse shared'))
 if (fs.existsSync(copyDir))
-  results.push(await measure('tram: WARM (diff project, same deps)', 'bun', [`${ROOT}/src/cli.ts`, 'dev', copyDir, '--port', '5193'], ROOT, 5193, 'cross-project'))
+  results.push(await measure('jetplane: WARM (diff project, same deps)', 'bun', [`${ROOT}/src/cli.ts`, 'dev', copyDir, '--port', '5193'], ROOT, 5193, 'cross-project'))
 
 console.log('\n--- disk ---')
 console.log(`  plain vite  ${appDir}/node_modules/.vite : ${du(`${appDir}/node_modules/.vite`)} MB (per project)`)
-console.log(`  tram shared ~/.tram/vite                 : ${du(`${HOME}/.tram/vite`)} MB (all same-dep projects)`)
+console.log(`  jetplane shared ~/.jetplane/vite                 : ${du(`${HOME}/.jetplane/vite`)} MB (all same-dep projects)`)
 console.log('\nsummary:', JSON.stringify(results))

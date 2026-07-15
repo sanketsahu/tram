@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
-// tram — one entrypoint for install + dev, backed by a shared content-addressed cache.
+// jetplane — one entrypoint for install + dev, backed by a shared content-addressed cache.
 //
-//   tram dev [dir] [--port N]     detect framework, ensure deps, run cache-backed dev
-//   tram detect [dir]             print detected framework
+//   jetplane dev [dir] [--port N]     detect framework, ensure deps, run cache-backed dev
+//   jetplane detect [dir]             print detected framework
 //
-// No daemon. Each run is its own process; sharing is via ~/.tram on disk.
+// No daemon. Each run is its own process; sharing is via ~/.jetplane on disk.
 
 import path from 'node:path'
 import { detectFramework, ensureInstalled, lockHash } from './core.ts'
@@ -36,15 +36,15 @@ async function main() {
 
   if (cmd === 'dev' || cmd === undefined) {
     const fw = detectFramework(dir)
-    log(`tram: ${dir}`)
-    log(`tram: framework=${fw}`)
+    log(`jetplane: ${dir}`)
+    log(`jetplane: framework=${fw}`)
     ensureInstalled(dir, log)
 
     if (fw === 'vite') {
       const t0 = performance.now()
       const { url, close } = await runViteDev(dir, args.port, log)
       const ms = (performance.now() - t0).toFixed(0)
-      log(`tram: dev server ready in ${ms} ms -> ${url}`)
+      log(`jetplane: dev server ready in ${ms} ms -> ${url}`)
       const shutdown = async () => { await close(); process.exit(0) }
       process.on('SIGINT', shutdown)
       process.on('SIGTERM', shutdown)
@@ -54,7 +54,7 @@ async function main() {
     if (fw === 'expo') {
       const t0 = performance.now()
       await runExpoDev(dir, args.port === 5173 ? 8081 : args.port, log)
-      log(`tram: up in ${(performance.now() - t0).toFixed(0)} ms`)
+      log(`jetplane: up in ${(performance.now() - t0).toFixed(0)} ms`)
       const shutdown = () => process.exit(0)
       process.on('SIGINT', shutdown)
       process.on('SIGTERM', shutdown)
@@ -62,16 +62,16 @@ async function main() {
     }
 
     if (fw === 'next') {
-      log('tram: next adapter not implemented yet. Coming next.')
+      log('jetplane: next adapter not implemented yet. Coming next.')
       process.exit(1)
     }
 
-    log('tram: could not detect a supported framework (vite/expo/next).')
+    log('jetplane: could not detect a supported framework (vite/expo/next).')
     process.exit(1)
   }
 
-  console.log(`unknown command: ${cmd}\nusage: tram dev [dir] [--port N] | tram detect [dir]`)
+  console.log(`unknown command: ${cmd}\nusage: jetplane dev [dir] [--port N] | jetplane detect [dir]`)
   process.exit(1)
 }
 
-main().catch((e) => { console.error('tram: error\n', e); process.exit(1) })
+main().catch((e) => { console.error('jetplane: error\n', e); process.exit(1) })

@@ -1,8 +1,8 @@
-// Tram core: hashing, system paths, lockfile hashing, framework detection,
+// Jetplane core: hashing, system paths, lockfile hashing, framework detection,
 // install backend selection, and the content-addressed store.
 //
-// No daemon, no process management. Everything shared lives on disk under ~/.tram,
-// so any number of independent `tram` runs reuse the same cache.
+// No daemon, no process management. Everything shared lives on disk under ~/.jetplane,
+// so any number of independent `jetplane` runs reuse the same cache.
 
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
@@ -10,8 +10,8 @@ import path from 'node:path'
 import os from 'node:os'
 import { execSync } from 'node:child_process'
 
-export const TRAM_HOME = process.env.TRAM_HOME || path.join(os.homedir(), '.tram')
-export const TOOLCHAIN = 'tram@0.1.0'
+export const TRAM_HOME = process.env.TRAM_HOME || path.join(os.homedir(), '.jetplane')
+export const TOOLCHAIN = 'jetplane@0.1.0'
 
 export const sha256 = (data: string | Buffer): string =>
   createHash('sha256').update(data).digest('hex')
@@ -76,8 +76,8 @@ export function pickInstaller(): { cmd: string; args: string[] } | null {
 export function ensureInstalled(projectDir: string, log: (s: string) => void): void {
   if (fs.existsSync(path.join(projectDir, 'node_modules'))) return
   const inst = pickInstaller()
-  if (!inst) { log('tram: no installer found (bun/pnpm/npm); skipping'); return }
-  log(`tram: installing deps with ${inst.cmd} (into shared store where supported)...`)
+  if (!inst) { log('jetplane: no installer found (bun/pnpm/npm); skipping'); return }
+  log(`jetplane: installing deps with ${inst.cmd} (into shared store where supported)...`)
   execSync([inst.cmd, ...inst.args].join(' '), { cwd: projectDir, stdio: 'inherit' })
 }
 

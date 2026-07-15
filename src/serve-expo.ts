@@ -61,10 +61,10 @@ Bun.serve({
       const t0 = performance.now()
       const body = await assembleBundle()
       const ms = (performance.now() - t0).toFixed(1)
-      return new Response(body, { headers: { 'content-type': 'application/javascript', 'x-tram-assemble-ms': ms, 'x-tram-rss-mb': rssMB() } })
+      return new Response(body, { headers: { 'content-type': 'application/javascript', 'x-jetplane-assemble-ms': ms, 'x-jetplane-rss-mb': rssMB() } })
     }
-    return new Response('tram thin server', { status: 200 })
+    return new Response('jetplane thin server', { status: 200 })
   },
 })
 
-console.log(`tram-serve: ready on :${port}  vendorImage=${(vendorMapped.length / 1048576).toFixed(1)}MB  idleRSS=${rssMB()}MB (no babel)`)
+console.log(`jetplane-serve: ready on :${port}  vendorImage=${(vendorMapped.length / 1048576).toFixed(1)}MB  idleRSS=${rssMB()}MB (no babel)`)

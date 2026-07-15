@@ -60,13 +60,13 @@ One Node babel service + N thin Bun servers (mmap vendor, transforms delegated):
 ### Fleet cost model
 
 **~54 MB x N  +  ~148 MB once**, vs Metro **~325 MB x N idle / ~2018 MB x N cold spike**.
-For 24 envs: ~1.4 GB (tram) vs ~7.8 GB idle / up to ~48 GB spiking (Metro).
+For 24 envs: ~1.4 GB (jetplane) vs ~7.8 GB idle / up to ~48 GB spiking (Metro).
 
 Bonus: all thin servers `mmap` the SAME vendor image read-only, so vendor pages are
 physically shared via the OS page cache — real aggregate memory is BELOW the 163 MB sum
 (ps RSS overcounts shared pages).
 
-## End-to-end `tram dev` (Expo) — measured
+## End-to-end `jetplane dev` (Expo) — measured
 
 `bun src/cli.ts dev bench/expo-app` — detect expo -> ensure shared service (singleton) ->
 build/reuse content-addressed vendor image -> start thin server.

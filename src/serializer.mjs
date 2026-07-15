@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tram serializer + require runtime — makes an EXECUTABLE bundle, not just concatenated
+// Jetplane serializer + require runtime — makes an EXECUTABLE bundle, not just concatenated
 // code. This is the piece that was missing: a module system.
 //
 //   - resolve the module graph from an entry (relative specifiers + extensions)
@@ -103,12 +103,12 @@ export function bundle(entry) {
 
 // ---- self-test: build a real graph and EXECUTE it -----------------------
 if (process.argv[1] && process.argv[1].endsWith('serializer.mjs') && !process.argv[2]) {
-  const dir = path.join(os.tmpdir(), 'tram-graph')
+  const dir = path.join(os.tmpdir(), 'jetplane-graph')
   fs.rmSync(dir, { recursive: true, force: true })
   fs.mkdirSync(path.join(dir, 'util'), { recursive: true })
   fs.writeFileSync(path.join(dir, 'index.ts'), `import { greet } from './greet';\nimport { NAME } from './const';\nglobalThis.__OUT = greet(NAME);`)
   fs.writeFileSync(path.join(dir, 'greet.ts'), `import { excl } from './util/excl';\nexport const greet = (n: string): string => excl('Hello ' + n);`)
-  fs.writeFileSync(path.join(dir, 'const.ts'), `export const NAME = 'Tram';`)
+  fs.writeFileSync(path.join(dir, 'const.ts'), `export const NAME = 'Jetplane';`)
   fs.writeFileSync(path.join(dir, 'util', 'excl.ts'), `export const excl = (s: string): string => s + '!';`)
 
   const { code, moduleCount } = bundle(path.join(dir, 'index.ts'))
@@ -118,7 +118,7 @@ if (process.argv[1] && process.argv[1].endsWith('serializer.mjs') && !process.ar
   // EXECUTE the bundle and check the module graph actually ran correctly
   globalThis.__OUT = undefined
   new Function(code)()
-  const expected = 'Hello Tram!'
+  const expected = 'Hello Jetplane!'
   console.log(`executed bundle -> __OUT = ${JSON.stringify(globalThis.__OUT)}`)
   console.log(globalThis.__OUT === expected ? `PASS: module graph resolved + executed correctly` : `FAIL: expected ${JSON.stringify(expected)}`)
   process.exit(globalThis.__OUT === expected ? 0 : 1)

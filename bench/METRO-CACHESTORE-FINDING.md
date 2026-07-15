@@ -1,6 +1,6 @@
 # Metro cacheStore: cross-run yes, cross-project NO
 
-Attempt: point Metro's own `FileStore` at a global dir (`~/.tram/metro-cache`) via
+Attempt: point Metro's own `FileStore` at a global dir (`~/.jetplane/metro-cache`) via
 `config.cacheStores` in `expo-app/metro.config.js`, hoping for cross-project sharing in
 Expo's guaranteed-bootable pipeline.
 
@@ -24,7 +24,7 @@ Expo's guaranteed-bootable pipeline.
 ## Implication (points back to the transform-level approach)
 
 Cross-project sharing requires keying by root-independent **source content**, which can
-only be done at the **transform layer**. That is exactly the Tram transform service
+only be done at the **transform layer**. That is exactly the Jetplane transform service
 (`src/transform-service.mjs`), which already measured **100% cross-project hits** on 995
 vendor modules (`bench/METRO-CACHE-RESULTS.md`). Metro's native caching does not and
 cannot provide it.
@@ -39,9 +39,9 @@ Instead of the cache-store layer (can't re-key) or a from-scratch serializer (ri
 the seam is Metro's `config.transformerPath` — a custom worker that wraps
 `metro-transform-worker` and caches by a ROOT-INDEPENDENT key (project-relative path +
 option signature + source bytes), storing the result path-normalized and rehydrating the
-caller's root on read. Files: `src/tram-transformer.cjs` + `expo-app/metro.config.js`.
+caller's root on read. Files: `src/jetplane-transformer.cjs` + `expo-app/metro.config.js`.
 
-Validated in isolation (`bench/tram-worker-test.mjs`, no 2 GB bundle):
+Validated in isolation (`bench/jetplane-worker-test.mjs`, no 2 GB bundle):
 - cold transform -> **valid Metro module** (`__d(` + `_dependencyMap`, 8 deps), stored
 - warm (same root) -> cache HIT, store didn't grow, byte-identical
 - **different project root -> REUSED (store didn't grow), rehydrated to root B,

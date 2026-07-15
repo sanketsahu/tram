@@ -5,7 +5,7 @@
  * series are megabytes on one LINEAR axis (same unit, not dual-axis), so the
  * lengths are real and comparable by eye.
  *
- * tram is featured in colour; Metro (and the web dev servers behind the toggle)
+ * jetplane is featured in colour; Metro (and the web dev servers behind the toggle)
  * are muted to grey for context. Idle is the upper bar of each pair, peak the
  * lower — so the two series stay legible on muted rows by position.
  *
@@ -19,8 +19,8 @@
  */
 import { useState } from 'react'
 
-const IDLE = '#3b82f6' // blue — idle memory (tram)
-const PEAK = '#d97706' // amber — peak memory (tram)
+const IDLE = '#3b82f6' // blue — idle memory (jetplane)
+const PEAK = '#d97706' // amber — peak memory (jetplane)
 const IDLE_MUTED = '#6b7280' // grey — idle (others)
 const PEAK_MUTED = '#4b5563' // darker grey — peak (others)
 
@@ -35,7 +35,7 @@ type Row = {
 }
 
 const DATA: Row[] = [
-  { name: 'tram', sub: 'thin serve · no Metro', self: true, idle: 40, peak: 68, note: 'mmap’d pre-built bundle served from a thin process; no per-project Metro' },
+  { name: 'jetplane', sub: 'thin serve · no Metro', self: true, idle: 40, peak: 68, note: 'mmap’d pre-built bundle served from a thin process; no per-project Metro' },
   { name: 'Metro (Expo)', sub: 'React Native · per project', idle: 325, peak: 2018, note: 'idle ~325 MB; cold bundle transiently spikes to ~2 GB and holds a ~700 MB floor' },
   { name: 'Vite', sub: 'web dev server', web: true, idle: 255, peak: 255, note: 'lazy on-demand ESM; no monolithic bundle, so no spike' },
   { name: 'Next.js', sub: 'Turbopack · web', web: true, idle: 851, peak: 853, note: 'route compiled on demand via Turbopack (Rust + Node)' },
@@ -148,11 +148,11 @@ export function BenchmarkChart() {
       </div>
 
       <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-        tram in colour; Metro and the web dev servers muted for context. Linear scale — Metro’s
+        jetplane in colour; Metro and the web dev servers muted for context. Linear scale — Metro’s
         cold bundle (~2,018 MB) runs off the axis (torn end) so the single-process servers stay
         comparable. Resident memory of the whole dev-server process tree (<code>ps</code> RSS),
         Apple&nbsp;Silicon · macOS&nbsp;15 ·{' '}
-        <a className="underline decoration-border underline-offset-2 hover:text-foreground" href="https://github.com/sanketsahu/tram/blob/main/bench/RESULTS.md">
+        <a className="underline decoration-border underline-offset-2 hover:text-foreground" href="https://github.com/sanketsahu/jetplane/blob/main/bench/RESULTS.md">
           bench/RESULTS.md
         </a>
       </p>

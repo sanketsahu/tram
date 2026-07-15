@@ -117,7 +117,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* tram brand tokens (blue accent + warn), layered on shadcn's neutral base */
+/* jetplane brand tokens (blue accent + warn), layered on shadcn's neutral base */
 :root {
   --brand: #2563eb;
   --brand-hover: #1d4ed8;

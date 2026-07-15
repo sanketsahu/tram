@@ -1,4 +1,4 @@
-# Tram
+# Jetplane
 
 Research toward a low-footprint dev/bundling toolchain for **Expo/React Native** (and
 Vite), built for running **many dev environments per machine** in a cloud fleet — where
@@ -14,6 +14,38 @@ The core idea, validated end-to-end on a real device:
 - **Serve a pre-built bundle from a thin, no-Metro process** (`mmap`'d), with **HMR**
   reconstructed from parsing the bundle + Metro's HMR protocol.
 
+## Install
+
+```bash
+npm i jetplane          # (publishing soon)
+npx jetplane init       # wires the transform cache into metro.config.js
+npx expo start          # your normal flow — now cross-project cached
+```
+
+## Is it a drop-in replacement?
+
+**Not wholesale — and it doesn't need to be.** jetplane is a caching + serve layer with
+two modes. It **augments Metro**; it does **not** replace the Expo CLI.
+
+- **Cache plugin** — one line in `metro.config.js` (`config.transformerPath =
+  require.resolve('jetplane/transformer')`). You keep the entire Expo CLI + Metro and
+  `expo start`, and gain a cross-project transform cache (no more cold-bundle re-transform
+  of node_modules). Fully drop-in.
+- **Thin serve** (experimental) — serves a pre-built bundle from a ~40 MB no-Metro process
+  with app-layer HMR. Replaces the dev-server *role* for the many-environments case.
+
+| Capability | Metro · `expo start` | jetplane cache plugin | jetplane thin serve |
+|---|---|---|---|
+| Drop-in with the Expo CLI | ✓ (it *is* Metro) | ✓ (+1 line) | ✗ (separate command) |
+| Runs in Expo Go | ✓ | ✓ | ✓ |
+| Cross-project transform cache | ✗ (root-dependent keys) | ✓ | ✓ |
+| Cold-bundle ~2 GB spike | yes | avoided after 1st build | none |
+| Per dev-server memory | ~325 MB idle · ~2 GB cold | ~325 MB (rides Metro) | **~40 MB** |
+| HMR / Fast Refresh | ✓ | ✓ | ✓ (app-layer) |
+| Full on-demand bundling / symbolication | ✓ | ✓ | partial (pre-built + app-layer HMR) |
+| Replaces Metro | — | augments it | serve role only |
+| Setup | none | 1 line | build step + serve |
+
 ## Benchmark
 
 Resident memory of the whole dev-server process tree (`ps` RSS), Apple Silicon · macOS 15.
@@ -23,7 +55,7 @@ Full methodology + harnesses: [docs/benchmark.md](docs/benchmark.md) · [bench/]
 
 ```
                         0        250       500       750      1000
-tram (thin, no Metro)
+jetplane (thin, no Metro)
   idle   40  ▇
   peak   68  ▇▇
 Metro (Expo)
@@ -39,7 +71,7 @@ Next.js (web)
 
 | dev server | idle | peak |
 |---|---:|---:|
-| **tram** (thin serve, no Metro) | **40 MB** | **68 MB** |
+| **jetplane** (thin serve, no Metro) | **40 MB** | **68 MB** |
 | Metro (Expo) | 325 MB | **2,018 MB** (cold-bundle spike) |
 | Vite (web) | 255 MB | 255 MB |
 | Next.js (web, Turbopack) | 851 MB | 853 MB |
@@ -57,10 +89,10 @@ never ran. Warm packed boot is **0.38 ms** (vs Metro's ~3,130 ms cold bundle).
 
 ### Fleet cost model
 
-- **tram:** ~40–55 MB × N + one shared transform service (~150 MB, once)
+- **jetplane:** ~40–55 MB × N + one shared transform service (~150 MB, once)
 - **Metro:** ~325 MB × N idle · ~2,018 MB × N during cold bundles
 
-For 24 environments: **~1.4 GB (tram)** vs **~7.8 GB idle / up to ~48 GB spiking (Metro)**.
+For 24 environments: **~1.4 GB (jetplane)** vs **~7.8 GB idle / up to ~48 GB spiking (Metro)**.
 
 Validated end-to-end on a real device (Expo Go, SDK 54): boots from the thin no-Metro
 server, **live HMR working**.
@@ -72,7 +104,7 @@ server, **live HMR working**.
 
 ## Layout
 
-- `src/` — the tram tooling: CLI, custom Metro transformer worker (cross-project cache),
+- `src/` — the jetplane tooling: CLI, custom Metro transformer worker (cross-project cache),
   transform service, serializer, thin dev server, HMR.
 - `bench/` — measurement harnesses + findings (`*.md`) and scaffolded test apps.
 - Design docs: `GOAL.md`, `FIRST-PRINCIPLES.md`, `CACHE-MODEL.md`, `SHARED-CACHE.md`,
@@ -81,7 +113,7 @@ server, **live HMR working**.
 ## Status
 
 Research WIP. The measurements and the on-device HMR demo are real; productionization
-(clean `tram build`/`serve`/`dev` commands, shared-service HMR transforms, full
+(clean `jetplane build`/`serve`/`dev` commands, shared-service HMR transforms, full
 import-change handling, cache-vary for env) is ongoing. Absolute paths in some configs
 are machine-specific to the author's setup.
 

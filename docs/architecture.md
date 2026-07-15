@@ -12,7 +12,7 @@ properties, and Metro treats them the same.
 | identical across branches/projects | yes | no |
 | needs HMR | ~never | always |
 
-Only ~8 MB of the 539 MB is reachable — **~98.5% of node_modules never ships**. tram
+Only ~8 MB of the 539 MB is reachable — **~98.5% of node_modules never ships**. jetplane
 exploits the asymmetry: build/cache the vendor layer once and share it; keep only the tiny
 app layer live.
 
@@ -22,12 +22,12 @@ app layer live.
                     ┌─────────────────────────────────────────────┐
   edit src/  ─────► │ shared transform service (Node, babel once)  │
                     │   content-addressed by source bytes          │
-                    │   → ~/.tram/tstore   (cross-project cache)    │
+                    │   → ~/.jetplane/tstore   (cross-project cache)    │
                     └───────────────┬─────────────────────────────┘
                                     │ transformed modules (root-normalized)
                     ┌───────────────▼─────────────────────────────┐
-   build (once) ──► │ bundle build  (Metro + tram transformerPath) │
-                    │   → ~/.tram/images/<lockHash>  (mmap-able)    │
+   build (once) ──► │ bundle build  (Metro + jetplane transformerPath) │
+                    │   → ~/.jetplane/images/<lockHash>  (mmap-able)    │
                     └───────────────┬─────────────────────────────┘
                                     │ pre-built, device-bootable bundle
                     ┌───────────────▼─────────────────────────────┐
@@ -44,9 +44,9 @@ stored output is normalized (project root → placeholder) and rehydrated to the
 root on read, so even worklet files that bake absolute paths become shareable.
 
 Metro's own transform cache **can't** do this — its keys embed the project root, so a
-second project doubles the cache instead of reusing it (measured). tram injects at Metro's
+second project doubles the cache instead of reusing it (measured). jetplane injects at Metro's
 transformer seam via a custom `transformerPath`
-([`src/tram-transformer.cjs`](../src/tram-transformer.cjs)) that wraps
+([`src/jetplane-transformer.cjs`](../src/jetplane-transformer.cjs)) that wraps
 `metro-transform-worker`.
 
 ### 2. Shared transform service
@@ -57,7 +57,7 @@ it **once** and serves N thin servers, keeping per-project memory flat.
 
 ### 3. Thin, no-Metro dev server
 
-[`src/tram-serve-thin.ts`](../src/tram-serve-thin.ts) `mmap`s the pre-built bundle (shared
+[`src/jetplane-serve-thin.ts`](../src/jetplane-serve-thin.ts) `mmap`s the pre-built bundle (shared
 physical pages across processes) and serves Expo's dev protocol — status, the
 `multipart/mixed` manifest (fresh id per load), the bundle, assets. No per-project Metro →
 ~40 MB. The heavy build happens once, at container-build / pre-warm time.
@@ -66,7 +66,7 @@ physical pages across processes) and serves Expo's dev protocol — status, the
 
 The bundle carries `__d(factory, id, [deps], "path")` for every module, so path→id,
 id→deps and inverse-deps are recovered by parsing it
-([`src/tram-hmr.mjs`](../src/tram-hmr.mjs)). The `/hot` WebSocket speaks Metro's protocol;
+([`src/jetplane-hmr.mjs`](../src/jetplane-hmr.mjs)). The `/hot` WebSocket speaks Metro's protocol;
 on an edit the file is transformed (hot / React Refresh), wrapped with the right id +
 dependencyMap + inverse-deps, and any new helper modules the transform pulls in are sent
 as `added`. Validated on device.

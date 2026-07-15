@@ -16,7 +16,7 @@ runs the output:
 
 ```
 serialized 4 modules, 1459 bytes -> bundle.js
-executed bundle -> __OUT = "Hello Tram!"
+executed bundle -> __OUT = "Hello Jetplane!"
 PASS: module graph resolved + executed correctly
 ```
 

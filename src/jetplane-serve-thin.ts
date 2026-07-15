@@ -3,7 +3,7 @@
 // to Expo Go over the dev protocol, with NO per-project Metro. Bundle is mmap'd (shared
 // physical pages across processes). Target RSS ~50 MB vs Metro's ~325 MB.
 //
-// Usage: bun src/tram-serve-thin.ts <projectDir> <port> <imageDir>
+// Usage: bun src/jetplane-serve-thin.ts <projectDir> <port> <imageDir>
 
 import path from 'node:path'
 import fs from 'node:fs'
@@ -11,11 +11,11 @@ import { createRequire } from 'node:module'
 import { execSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 // @ts-ignore - sibling ESM helper
-import { parseBundle, makeUpdate } from './tram-hmr.mjs'
+import { parseBundle, makeUpdate } from './jetplane-hmr.mjs'
 
 const projectDir = process.argv[2]
 const port = parseInt(process.argv[3] || '8091', 10)
-const imageDir = process.argv[4] || `${process.env.HOME}/.tram/images/expo54`
+const imageDir = process.argv[4] || `${process.env.HOME}/.jetplane/images/expo54`
 
 function lanIP(): string {
   for (const dev of ['en0', 'en1']) {
@@ -102,7 +102,7 @@ function serveAsset(url: URL): Response {
     if (url.pathname === '/status') return new Response('packager-status:running')
 
     if (url.pathname.endsWith('.bundle')) {
-      return new Response(bundle, { headers: { 'content-type': 'application/javascript', 'x-tram-rss-mb': rssMB() } })
+      return new Response(bundle, { headers: { 'content-type': 'application/javascript', 'x-jetplane-rss-mb': rssMB() } })
     }
 
     if (url.pathname.startsWith('/assets')) return serveAsset(url)
@@ -133,7 +133,7 @@ function serveAsset(url: URL): Response {
   },
 })
 
-console.log(`tram-serve-thin: :${port}  bundle=${(bundle.length / 1048576).toFixed(1)}MB mmap'd  idleRSS=${rssMB()}MB (no Metro)`)
+console.log(`jetplane-serve-thin: :${port}  bundle=${(bundle.length / 1048576).toFixed(1)}MB mmap'd  idleRSS=${rssMB()}MB (no Metro)`)
 
 const ip = lanIP()
 const expUrl = `exp://${ip}:${port}`

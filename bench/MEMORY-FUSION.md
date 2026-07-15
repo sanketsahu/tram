@@ -6,12 +6,12 @@ Metro.
 
 ## Build phase (once, warm)
 
-`expo-app-54` with the tram worker, warm cache -> captured the device-bootable dev bundle
+`expo-app-54` with the jetplane worker, warm cache -> captured the device-bootable dev bundle
 + manifest in **1362 ms** (99.9% cache hits):
-- `~/.tram/images/expo54/main.ios.bundle` (8.1 MB JS)
-- `~/.tram/images/expo54/manifest.json` (application/expo+json)
+- `~/.jetplane/images/expo54/main.ios.bundle` (8.1 MB JS)
+- `~/.jetplane/images/expo54/manifest.json` (application/expo+json)
 
-## Serve phase (runtime, thin) — `src/tram-serve-thin.ts`
+## Serve phase (runtime, thin) — `src/jetplane-serve-thin.ts`
 
 Bun server, mmap'd bundle, serves the full Expo dev protocol:
 
@@ -81,7 +81,7 @@ Two bugs found and fixed via on-device iteration:
 ## How to scan (validate on device)
 
 ```
-bun src/tram-serve-thin.ts bench/expo-app-54 8091
+bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
 ```
 - Simulator: open `exp://localhost:8091` in Expo Go
 - Phone (same Wi-Fi): Expo Go -> "Enter URL manually" -> `exp://10.148.1.9:8091`

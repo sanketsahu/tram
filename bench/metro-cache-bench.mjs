@@ -17,11 +17,11 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const APP = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const APP = '/Users/sanketsahu/projects/jetplane/bench/expo-app'
 const ROOT_A = APP
-const ROOT_B = '/private/tmp/claude-501/-Users-sanketsahu-projects-tram/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad/projB'
-const STORE = '/Users/sanketsahu/projects/tram/prototype/store-metro'
-const PACKED = '/Users/sanketsahu/projects/tram/prototype/base-image-metro.pack'
+const ROOT_B = '/private/tmp/claude-501/-Users-sanketsahu-projects-jetplane/86802dfc-dbac-451f-816b-0a3f77deb0fb/scratchpad/projB'
+const STORE = '/Users/sanketsahu/projects/jetplane/prototype/store-metro'
+const PACKED = '/Users/sanketsahu/projects/jetplane/prototype/base-image-metro.pack'
 
 const require = createRequire(APP + '/')
 const babel = require('@babel/core')

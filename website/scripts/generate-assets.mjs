@@ -70,10 +70,10 @@ const html = `<!doctype html><html><head><meta charset="utf-8"/><style>
 </style></head><body>
   <div class="card">
     <span class="logo">${ogLogo}</span>
-    <div class="wordmark">tram</div>
+    <div class="wordmark">jetplane</div>
     <h1>Run dozens of Expo dev servers <span class="hl">on one machine</span></h1>
     <p>A cross-project transform cache and a thin, no-Metro dev server — ~40 MB per environment, live HMR included.</p>
-    <div class="cli"><span class="prompt">$</span> tram dev</div>
+    <div class="cli"><span class="prompt">$</span> jetplane dev</div>
   </div>
 </body></html>`
 

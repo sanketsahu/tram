@@ -12,7 +12,7 @@ Harnesses are in [`../bench/`](../bench/); this page consolidates the headline r
 - **Bundle time** is Metro's `iOS Bundled … ms` line, cold vs a different project hitting
   the warm cross-project cache.
 - **Cache hit-rate** is the transform worker's own hit/miss telemetry
-  (`src/tram-transformer.cjs` → `src/tram-stats.mjs`), counter reset per bundle.
+  (`src/jetplane-transformer.cjs` → `src/jetplane-stats.mjs`), counter reset per bundle.
 - Apps are real Expo SDK 54 projects (`bench/expo-app-54*`, expo-router + Reanimated).
 
 ## Dev-server memory (MB · lower is better)
@@ -22,7 +22,7 @@ shown clipped (†) — on a linear axis it would flatten everything else.
 
 | dev server | idle | peak | notes |
 |---|---:|---:|---|
-| **tram** (thin serve, no Metro) | **40** | **68** | mmap'd pre-built bundle; no per-project Metro |
+| **jetplane** (thin serve, no Metro) | **40** | **68** | mmap'd pre-built bundle; no per-project Metro |
 | Metro (Expo) | 325 | **2,018 †** | cold bundle spikes ~2 GB, holds a ~700 MB floor |
 | Vite (web) | 255 | 255 | lazy on-demand ESM; no monolithic bundle |
 | Next.js (web, Turbopack) | 851 | 853 | route compiled on demand |
@@ -42,7 +42,7 @@ never ran. Only the modules that genuinely differ in C were misses.
 
 ## Bounded memory & boot (vendor cache prototype, 995 real modules)
 
-| metric | tram | Metro |
+| metric | jetplane | Metro |
 |---|---:|---:|
 | cold transform (build, once) | 303 MB peak | — |
 | warm packed boot | **0.38 ms** | ~3,130 ms cold bundle |
@@ -51,11 +51,11 @@ never ran. Only the modules that genuinely differ in C were misses.
 
 ## Fleet cost model
 
-- **tram:** ~40–55 MB × N + one shared transform service (~150 MB, once)
+- **jetplane:** ~40–55 MB × N + one shared transform service (~150 MB, once)
 - **Metro:** ~325 MB × N idle · ~2,018 MB × N during cold bundles
 
-For 24 environments: **~1.4 GB (tram)** vs **~7.8 GB idle / up to ~48 GB spiking (Metro)**.
-The OOM trigger on a fleet node is a burst of concurrent cold bundles — tram removes it.
+For 24 environments: **~1.4 GB (jetplane)** vs **~7.8 GB idle / up to ~48 GB spiking (Metro)**.
+The OOM trigger on a fleet node is a burst of concurrent cold bundles — jetplane removes it.
 
 ## On device
 

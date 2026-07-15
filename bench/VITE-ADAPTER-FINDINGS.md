@@ -9,11 +9,11 @@ curl. boot-to-loaded = spawn -> every module reachable from index.html served.
 |---|---:|---:|
 | plain vite: cold | 293 ms | 416 ms |
 | plain vite: warm | 221 ms | 291 ms |
-| tram: cold | 278 ms | 377 ms |
-| tram: warm (same project) | 178 ms | 291 ms |
-| **tram: warm (diff project, same deps)** | **2176 ms** | **2333 ms** |
+| jetplane: cold | 278 ms | 377 ms |
+| jetplane: warm (same project) | 178 ms | 291 ms |
+| **jetplane: warm (diff project, same deps)** | **2176 ms** | **2333 ms** |
 
-Disk: tram shared `~/.tram/vite` = 3.6 MB for ALL same-dep projects; plain = 3.6 MB
+Disk: jetplane shared `~/.jetplane/vite` = 3.6 MB for ALL same-dep projects; plain = 3.6 MB
 per project.
 
 ## What this means
@@ -23,7 +23,7 @@ per project.
    the first project's shared cacheDir triggers a full **re-optimize** (2.3 s, 8x slower
    than plain warm). Sharing across roots backfires. This is the exact fleet scenario we
    care about, and it regressed.
-2. **tram adds nothing on same-project** — its "warm" (291 ms) is just Vite's own cache.
+2. **jetplane adds nothing on same-project** — its "warm" (291 ms) is just Vite's own cache.
 3. **Only disk dedup is a real (modest) win.**
 4. **Vite 8 (Rolldown, Rust) is already lean**: 416 ms cold, 3.6 MB prebundle, and — unlike
    Metro — no memory spike anywhere. The headroom on Vite is small.
@@ -31,7 +31,7 @@ per project.
 ## Correct path for a Vite win (not yet built)
 
 Do NOT piggyback Vite's optimizeDeps. Instead apply the mechanism the prototype PROVED:
-serve vendor from tram's own **content-addressed, packed** store via the plugin's
+serve vendor from jetplane's own **content-addressed, packed** store via the plugin's
 `resolveId`/`load` hooks. Because it is content-addressed (keyed by module bytes, not
 project root), cross-project reuse is correct and root-independent — the thing Vite's own
 cacheDir cannot do. This bypasses Vite's per-project optimize+validation entirely.

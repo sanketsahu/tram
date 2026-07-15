@@ -17,7 +17,7 @@ import fs from 'node:fs'
 // Usage: node --expose-gc resident-sim.mjs <N> <naive|shared> [packedFile]
 const N = parseInt(process.argv[2] || '200', 10)
 const MODE = process.argv[3] || 'shared'
-const PACKED = process.argv[4] || '/Users/sanketsahu/projects/tram/prototype/base-image-vite-app.pack'
+const PACKED = process.argv[4] || '/Users/sanketsahu/projects/jetplane/prototype/base-image-vite-app.pack'
 const MB = (b) => (b / 1048576).toFixed(1)
 
 if (!fs.existsSync(PACKED)) { console.error('run cache-bench.mjs first to build base-image.pack'); process.exit(1) }

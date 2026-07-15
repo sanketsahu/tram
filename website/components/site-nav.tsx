@@ -16,13 +16,13 @@ export function SiteNav() {
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Logo size={24} />
-          tram
+          jetplane
         </Link>
         <div className="flex items-center gap-5 text-sm text-muted-foreground">
           <Link href="/#benchmark" className="transition-colors hover:text-foreground">Benchmark</Link>
           <Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link>
           <a
-            href="https://github.com/sanketsahu/tram"
+            href="https://github.com/sanketsahu/jetplane"
             className="flex items-center gap-1.5 transition-colors hover:text-foreground"
           >
             <GitHubIcon /> GitHub

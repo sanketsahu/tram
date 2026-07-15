@@ -1,4 +1,4 @@
-// Expo adapter (Path 2). Orchestrates the end-to-end `tram dev` for Expo:
+// Expo adapter (Path 2). Orchestrates the end-to-end `jetplane dev` for Expo:
 //   1. ensure the shared transform service is running (singleton, shared across projects)
 //   2. ensure a pre-built vendor image exists for this lockHash (build once via service)
 //   3. start the thin per-project server (mmap vendor + delegate app transforms)
@@ -22,16 +22,16 @@ async function serviceHealthy(): Promise<boolean> {
 }
 
 // Singleton shared service: start detached so it outlives this CLI and is reused by
-// every other `tram dev` on the box.
+// every other `jetplane dev` on the box.
 async function ensureService(toolchainProject: string, log: (s: string) => void) {
-  if (await serviceHealthy()) { log(`tram: transform service already running :${SERVICE_PORT} (shared)`) ; return }
-  log(`tram: starting shared transform service (babel, once) :${SERVICE_PORT}...`)
+  if (await serviceHealthy()) { log(`jetplane: transform service already running :${SERVICE_PORT} (shared)`) ; return }
+  log(`jetplane: starting shared transform service (babel, once) :${SERVICE_PORT}...`)
   const child = spawn('node', [SERVICE, toolchainProject, String(SERVICE_PORT)], {
     detached: true, stdio: 'ignore', env: process.env,
   })
   child.unref()
   const dl = Date.now() + 30000
-  while (Date.now() < dl) { if (await serviceHealthy()) { log('tram: transform service ready'); return } await sleep(150) }
+  while (Date.now() < dl) { if (await serviceHealthy()) { log('jetplane: transform service ready'); return } await sleep(150) }
   throw new Error('transform service did not become healthy')
 }
 
@@ -64,9 +64,9 @@ async function transformRaw(file: string, projectDir: string): Promise<string> {
 // Build the pre-built, path-normalized, content-addressed vendor image (once per lockHash).
 async function ensureVendorImage(projectDir: string, lh: string, log: (s: string) => void): Promise<string> {
   const img = vendorImagePath(lh)
-  if (fs.existsSync(img)) { log(`tram: vendor image WARM ${path.relative(TRAM_HOME, img)}`); return img }
+  if (fs.existsSync(img)) { log(`jetplane: vendor image WARM ${path.relative(TRAM_HOME, img)}`); return img }
   const files = vendorFiles(projectDir)
-  log(`tram: building vendor image (${files.length} modules, via shared service, once)...`)
+  log(`jetplane: building vendor image (${files.length} modules, via shared service, once)...`)
   const t0 = performance.now()
   const parts: string[] = []
   // limited concurrency to the service
@@ -77,7 +77,7 @@ async function ensureVendorImage(projectDir: string, lh: string, log: (s: string
     parts.push(...codes)
   }
   fs.writeFileSync(img, parts.join('\n'))
-  log(`tram: vendor image built in ${Math.round(performance.now() - t0)} ms -> ${path.relative(TRAM_HOME, img)} (${(fs.statSync(img).size / 1048576).toFixed(1)} MB)`)
+  log(`jetplane: vendor image built in ${Math.round(performance.now() - t0)} ms -> ${path.relative(TRAM_HOME, img)} (${(fs.statSync(img).size / 1048576).toFixed(1)} MB)`)
   return img
 }
 
@@ -102,7 +102,7 @@ const rssMB = () => (process.memoryUsage().rss / 1048576).toFixed(1)
 
 export async function runExpoDev(projectDir: string, port: number, log: (s: string) => void) {
   const lh = lockHash(projectDir)
-  log(`tram: expo project, lockHash=${lh}`)
+  log(`jetplane: expo project, lockHash=${lh}`)
   await ensureService(projectDir, log)
   const img = await ensureVendorImage(projectDir, lh, log)
 
@@ -125,11 +125,11 @@ export async function runExpoDev(projectDir: string, port: number, log: (s: stri
       if (url.pathname.endsWith('.bundle')) {
         const t0 = performance.now()
         const body = await assembleBundle()
-        return new Response(body, { headers: { 'content-type': 'application/javascript', 'x-tram-assemble-ms': (performance.now() - t0).toFixed(1), 'x-tram-rss-mb': rssMB() } })
+        return new Response(body, { headers: { 'content-type': 'application/javascript', 'x-jetplane-assemble-ms': (performance.now() - t0).toFixed(1), 'x-jetplane-rss-mb': rssMB() } })
       }
-      return new Response('tram thin server', { status: 200 })
+      return new Response('jetplane thin server', { status: 200 })
     },
   })
-  log(`tram: dev server ready :${port}  vendor=${(vendorMapped.length / 1048576).toFixed(1)}MB mmap'd  thinRSS=${rssMB()}MB (no babel)`)
-  log(`tram: bundle at http://localhost:${port}/index.bundle?platform=ios`)
+  log(`jetplane: dev server ready :${port}  vendor=${(vendorMapped.length / 1048576).toFixed(1)}MB mmap'd  thinRSS=${rssMB()}MB (no babel)`)
+  log(`jetplane: bundle at http://localhost:${port}/index.bundle?platform=ios`)
 }

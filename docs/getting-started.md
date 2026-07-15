@@ -12,12 +12,12 @@ service). These steps reproduce the measured results and the on-device HMR demo.
 
 ## 1. Cross-project cache in a real Expo app
 
-`bench/expo-app-54` is an Expo SDK 54 app (expo-router + Reanimated) with the tram
+`bench/expo-app-54` is an Expo SDK 54 app (expo-router + Reanimated) with the jetplane
 transformer wired into `metro.config.js`.
 
 ```bash
 cd bench/expo-app-54
-npx expo start          # first run builds the shared cache in ~/.tram/tstore
+npx expo start          # first run builds the shared cache in ~/.jetplane/tstore
 ```
 
 Bundle a **different** project with the same deps — it reuses the cache cross-project:
@@ -25,7 +25,7 @@ Bundle a **different** project with the same deps — it reuses the cache cross-
 ```bash
 cd ../bench/expo-app-54-b
 npx expo start --port 8082
-node ../../src/tram-stats.mjs   # hit-rate for the last bundle (reset with: … reset)
+node ../../src/jetplane-stats.mjs   # hit-rate for the last bundle (reset with: … reset)
 ```
 
 ## 2. Thin, no-Metro dev server + HMR
@@ -34,10 +34,10 @@ Capture a bundle once (fast — warm cache), then serve it from the thin server:
 
 ```bash
 # capture the device-bootable bundle + manifest (build phase, once)
-#   done automatically by the flow in bench/MEMORY-FUSION.md → ~/.tram/images/expo54/
+#   done automatically by the flow in bench/MEMORY-FUSION.md → ~/.jetplane/images/expo54/
 
 # serve it — no Metro, ~40–68 MB, prints a QR
-bun src/tram-serve-thin.ts bench/expo-app-54 8091
+bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
 ```
 
 Scan the QR in Expo Go (or `exp://localhost:8091` on the simulator). Then edit
@@ -73,5 +73,5 @@ Next.js + shadcn (radix-ui) + Tailwind. The interactive benchmark chart is
 
 ## Caveat
 
-Some configs (`metro.config.js`, `tram-serve-thin.ts`) contain absolute paths specific to
+Some configs (`metro.config.js`, `jetplane-serve-thin.ts`) contain absolute paths specific to
 the author's machine. Parameterize them before running elsewhere.

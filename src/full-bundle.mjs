@@ -105,14 +105,14 @@ function scaffold(root) {
   fs.rmSync(root, { recursive: true, force: true })
   fs.mkdirSync(path.join(root, 'app'), { recursive: true })
   fs.mkdirSync(path.join(root, 'node_modules', 'mylib'), { recursive: true })
-  fs.writeFileSync(path.join(root, 'app', 'index.ts'), `import { banner } from './banner';\nimport { upper } from 'mylib';\nglobalThis.__OUT = banner(upper('tram'));`)
+  fs.writeFileSync(path.join(root, 'app', 'index.ts'), `import { banner } from './banner';\nimport { upper } from 'mylib';\nglobalThis.__OUT = banner(upper('jetplane'));`)
   fs.writeFileSync(path.join(root, 'app', 'banner.ts'), `export const banner = (s: string): string => '[' + s + ']';`)
   fs.writeFileSync(path.join(root, 'node_modules', 'mylib', 'package.json'), JSON.stringify({ name: 'mylib', main: 'index.js' }))
   fs.writeFileSync(path.join(root, 'node_modules', 'mylib', 'index.js'), `const { shout } = require('./shout');\nexports.upper = (s) => shout(s.toUpperCase());`)
   fs.writeFileSync(path.join(root, 'node_modules', 'mylib', 'shout.js'), `exports.shout = (s) => s + '!!!';`)
 }
 
-const SB = path.join(os.tmpdir(), 'tram-fullbundle')
+const SB = path.join(os.tmpdir(), 'jetplane-fullbundle')
 const rootA = path.join(SB, 'projA')
 const rootB = path.join(SB, 'projB2')
 scaffold(rootA); scaffold(rootB)

@@ -5,8 +5,8 @@
 
 import fs from 'node:fs'
 
-const PACKED = '/Users/sanketsahu/projects/tram/prototype/base-image-metro.pack'
-const LOCAL_ROOT = '/Users/sanketsahu/projects/tram/bench/expo-app'
+const PACKED = '/Users/sanketsahu/projects/jetplane/prototype/base-image-metro.pack'
+const LOCAL_ROOT = '/Users/sanketsahu/projects/jetplane/bench/expo-app'
 const MB = (b) => (b / 1048576).toFixed(1)
 
 const rssStart = process.memoryUsage().rss
