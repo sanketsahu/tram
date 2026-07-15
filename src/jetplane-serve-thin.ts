@@ -87,8 +87,12 @@ for (const dir of watchDirs) {
   })
 }
 
+// The captured manifest bakes the *build* server's own URL (e.g. http://127.0.0.1:8099,
+// the temporary capture Metro) into launchAsset + assets. Rewrite ANY localhost/127.0.0.1
+// port to whatever host the client actually reached us on, so the bundle + asset URLs
+// point back at this thin server (works for simulator localhost and a LAN phone).
 const rewriteHost = (s: string, host: string) =>
-  s.split('http://127.0.0.1:8081').join(`http://${host}`).split('http://localhost:8081').join(`http://${host}`)
+  s.replace(/http:\/\/(?:127\.0\.0\.1|localhost):\d+/g, `http://${host}`)
 
 // expo-updates stores each loaded manifest in SQLite keyed by (scope_key, commit_time).
 // Our replayed manifest is static, so re-scanning collides (UNIQUE constraint). Give
