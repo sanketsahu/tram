@@ -76,7 +76,8 @@ async function get(url, ms, headers = {}) {
 // 3. build the device-bootable bundle by capturing it from Metro once (cached per lockHash)
 async function ensureBundle(dir, platform = 'ios') {
   const imageDir = path.join(HOME, '.jetplane', 'images', lockHash(dir))
-  if (fs.existsSync(path.join(imageDir, `main.${platform}.bundle`)) && fs.existsSync(path.join(imageDir, 'manifest-multipart.bin'))) {
+  const complete = ['main.ios.bundle', 'manifest-multipart.bin', 'index.html', 'main.web.bundle']
+  if (complete.every((f) => fs.existsSync(path.join(imageDir, f)))) {
     log(`bundle cached (${path.relative(HOME, imageDir)})`); return imageDir
   }
   fs.mkdirSync(imageDir, { recursive: true })
@@ -100,7 +101,27 @@ async function ensureBundle(dir, platform = 'ios') {
     const bundle = await get(url, 180000)
     if (!bundle.ok) throw new Error('bundle request failed')
     fs.writeFileSync(path.join(imageDir, `main.${platform}.bundle`), bundle.body)
-    log(`bundle built -> ${path.relative(HOME, imageDir)}`)
+    log(`native bundle built -> ${path.relative(HOME, imageDir)}`)
+
+    // web: capture the HTML shell + a self-contained (lazy=false) web bundle, so the
+    // thin server can serve the browser target the same way it serves the device.
+    try {
+      const html = (await get(base, 30000, { Accept: 'text/html' })).body
+      const m = html && html.match(/<script[^>]*src="([^"]*\.bundle[^"]*)"/)
+      if (m) {
+        let webUrl = m[1].replace(/([?&])lazy=true/, '$1lazy=false')
+        if (!/[?&]lazy=/.test(webUrl)) webUrl += (webUrl.includes('?') ? '&' : '?') + 'lazy=false'
+        const abs = webUrl.startsWith('http') ? webUrl : base.replace(/\/$/, '') + webUrl
+        log('building web bundle...')
+        const web = await get(abs, 180000)
+        if (web.ok) {
+          fs.writeFileSync(path.join(imageDir, 'index.html'), html.replace(m[1], '/jetplane-web.bundle'))
+          fs.writeFileSync(path.join(imageDir, 'main.web.bundle'), web.body)
+          log('web bundle + html captured')
+        } else log('web capture skipped (bundle request failed)')
+      } else log('web capture skipped (no web entry in HTML — is react-native-web installed?)')
+    } catch (e) { log(`web capture skipped (${e.message})`) }
+
     return imageDir
   } finally { kill(); await sleep(500) }
 }

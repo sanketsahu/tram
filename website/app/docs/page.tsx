@@ -183,6 +183,15 @@ module.exports = config`}</Code>
             dev-server role, not the Expo CLI. (<code>jetplane start</code> is an alias.)
           </P>
           <P>
+            <strong>Native and web, one server.</strong> The build captures both a device bundle and a
+            self-contained web bundle, and the thin server serves each target from the same process:
+            Expo Go loads the device manifest, and a browser at <code>http://localhost:&lt;port&gt;</code>{' '}
+            gets the web HTML shell + bundle. HMR works for both — each connected client is tagged by
+            platform (native vs web) and gets an update built against its own bundle. The dev server also
+            takes interactive keys like <code>expo start</code>: <code>w</code> opens web,{' '}
+            <code>i</code> the iOS simulator, <code>a</code> Android, <code>?</code> help, <code>q</code> quit.
+          </P>
+          <P>
             The three commands, from least to most: <code>jetplane init</code> just wires the cache
             into your config; <code>jetplane serve</code> runs the thin server for a project that’s
             already set up; <code>jetplane dev</code> does the whole fresh-project setup and then
