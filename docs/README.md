@@ -1,8 +1,11 @@
 # Jetplane documentation
 
-Low-footprint dev/bundling toolchain for Expo/React Native (and Vite), built for running
-many dev environments per machine. Everything here is measured; the on-device HMR demo is
-real. Research WIP.
+A Metro plugin and a lightweight dev server for Expo/React Native, built for running many
+dev environments per machine. Open source (MIT), on npm as `jetplane`. Everything here is
+measured; the on-device HMR demo is real.
+
+**New here?** Start with [getting-started.md](./getting-started.md) — install + wire it
+into an Expo project in three commands.
 
 ## Start here
 

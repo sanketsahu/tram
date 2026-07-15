@@ -8,12 +8,13 @@ export const metadata: Metadata = {
 }
 
 const SECTIONS = [
-  { id: 'overview', title: 'Overview' },
+  { id: 'quick-start', title: 'Quick start' },
+  { id: 'what', title: 'What it is' },
   { id: 'problem', title: 'The problem' },
   { id: 'principle', title: 'First principle' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'hmr', title: 'HMR' },
-  { id: 'run', title: 'Running it' },
+  { id: 'thin', title: 'Thin dev server' },
   { id: 'benchmark', title: 'Benchmark methodology' },
   { id: 'roadmap', title: 'Status & roadmap' },
 ]
@@ -52,13 +53,52 @@ export default function Docs() {
         </aside>
 
         <article className="min-w-0 max-w-3xl">
-          <H id="overview">Overview</H>
+          <H id="quick-start">Quick start</H>
           <P>
-            jetplane is a low-footprint dev/bundling toolchain for Expo/React Native (and Vite), built
-            for running many dev environments per machine. It gives React Native a cross-project
-            transform cache and a thin, no-Metro dev server, so each environment costs about 40 MB
-            instead of Metro’s ~325 MB idle / ~2 GB cold. Everything here is measured; the on-device
-            HMR demo is real. It is a research WIP.
+            Add jetplane to an existing Expo project. No workflow change — you keep using{' '}
+            <code>expo start</code>.
+          </P>
+          <Code>{`# 1. install
+npm install jetplane
+
+# 2. wire it into metro.config.js
+#    (creates the file, or prints the 2 lines to add if you already have one)
+npx jetplane init
+
+# 3. run your app as usual — now cross-project cached
+npx expo start`}</Code>
+          <P>
+            <code>jetplane init</code> adds two lines to your Metro config:
+          </P>
+          <Code>{`// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config')
+
+const config = getDefaultConfig(__dirname)
+config.transformerPath = require.resolve('jetplane/transformer') // the Metro plugin
+config.cacheStores = []                                          // jetplane owns caching
+
+module.exports = config`}</Code>
+          <P>
+            That’s the whole integration. The first bundle populates a shared, content-addressed
+            cache under <code>~/.jetplane</code>; every other same-dep project (and every restart)
+            reuses it, so cold bundles stop re-transforming <code>node_modules</code>. Requires
+            Expo SDK 54+, Node 20+.
+          </P>
+
+          <H id="what">What it is</H>
+          <P>
+            jetplane is two things: a <strong>Metro plugin</strong> (a custom{' '}
+            <code>transformerPath</code>) that gives React Native a cross-project transform cache
+            Metro’s own root-dependent cache can’t provide; and a <strong>lightweight, no-Metro dev
+            server</strong> that serves a pre-built bundle from a ~40 MB process with live HMR, for
+            running many environments per machine.
+          </P>
+          <P>
+            It <strong>augments Metro</strong> — it is not a replacement for the Expo CLI. The plugin
+            mode is fully drop-in with <code>expo start</code>; the thin-serve mode is a separate,
+            experimental command. See the full{' '}
+            <Link href="/#compatibility" className="text-brand hover:text-brand-hover">comparison</Link>.
+            Open source under MIT.
           </P>
 
           <H id="problem">The problem</H>
@@ -114,16 +154,14 @@ export default function Docs() {
             <code>added</code>. Validated on device in Expo Go — the title hot-swaps without a reload.
           </P>
 
-          <H id="run">Running it</H>
-          <P>The jetplane tooling lives in <code>src/</code>. To reproduce the on-device demo:</P>
-          <Code>{`# 1. an Expo SDK 54 app with the jetplane transformer wired in (bench/expo-app-54)
-cd bench/expo-app-54 && npx expo start   # first run builds the shared cache
-
-# 2. a second project reuses the cache cross-project (99.9% hits)
-cd bench/expo-app-54-b && npx expo start
-
-# 3. capture a bundle, serve it from the thin no-Metro server + HMR
-bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
+          <H id="thin">Thin dev server (experimental)</H>
+          <P>
+            Beyond the plugin, jetplane can serve a pre-built bundle from a ~40 MB no-Metro process
+            with live HMR — for running many environments per machine. This mode is experimental and
+            runs under Bun; it replaces the dev-server role (a separate command), not the Expo CLI.
+          </P>
+          <Code>{`# serve a pre-built bundle to Expo Go — no Metro, ~40 MB, prints a QR
+bun node_modules/jetplane/src/jetplane-serve-thin.ts <projectDir> 8091
 #   scan the QR in Expo Go, then edit app/(tabs)/index.tsx to see live HMR`}</Code>
 
           <H id="benchmark">Benchmark methodology</H>
@@ -139,11 +177,16 @@ bun src/jetplane-serve-thin.ts bench/expo-app-54 8091
 
           <H id="roadmap">Status &amp; roadmap</H>
           <P>
-            Research WIP. Proven: the vendor/app split, cross-project cache (99.9% on device), thin
-            server memory, and live HMR. Remaining: multi-level new-dep + deletion handling in HMR,
-            routing HMR transforms through the shared service, the 0.2% worklet path-normalization
-            gap, app-layer cache-vary for env inlining, and a clean{' '}
-            <code>jetplane build</code>/<code>serve</code>/<code>dev</code> command surface.
+            Open source under MIT and published on npm (<code>jetplane</code>). Shipping today: the
+            Metro plugin (cross-project cache, drop-in with <code>expo start</code>) — measured at a
+            99.9% cross-project hit-rate on device. The thin dev server + HMR is experimental.
+          </P>
+          <P>
+            On the roadmap: multi-level new-dep + deletion handling in HMR, routing HMR transforms
+            through the shared service, closing the 0.2% worklet path-normalization gap, app-layer
+            cache-vary for env inlining, and a first-class <code>jetplane serve</code> command.
+            Contributions welcome on{' '}
+            <a className="text-brand hover:text-brand-hover" href="https://github.com/sanketsahu/jetplane">GitHub</a>.
           </P>
 
           <div className="mt-12 border-t border-border pt-6">

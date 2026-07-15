@@ -1,19 +1,36 @@
 # Getting started
 
-Research WIP — there is no published npm package yet. The tooling lives in
-[`../src/`](../src/) and runs with [Bun](https://bun.sh) (Node works for the transform
-service). These steps reproduce the measured results and the on-device HMR demo.
+## Install (the Metro plugin) — in your Expo project
 
-## Prerequisites
+Requires Expo SDK 54+ and Node 20+.
 
-- Bun ≥ 1.2, Node ≥ 20
-- Xcode Simulator and/or **Expo Go** on a phone (for the on-device demo)
-- macOS (the benchmarks were run on Apple Silicon / macOS 15)
+```bash
+npm install jetplane
+npx jetplane init       # wires the transform cache into metro.config.js
+npx expo start          # your normal flow — now cross-project cached
+```
 
-## 1. Cross-project cache in a real Expo app
+`jetplane init` writes (or tells you to add) two lines:
 
-`bench/expo-app-54` is an Expo SDK 54 app (expo-router + Reanimated) with the jetplane
-transformer wired into `metro.config.js`.
+```js
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config')
+
+const config = getDefaultConfig(__dirname)
+config.transformerPath = require.resolve('jetplane/transformer') // the Metro plugin
+config.cacheStores = []                                          // jetplane owns caching
+
+module.exports = config
+```
+
+The first bundle populates a shared, content-addressed cache under `~/.jetplane`. Every
+other same-dep project (and every restart) reuses it, so cold bundles stop re-transforming
+`node_modules`. That is the whole integration — you keep the entire Expo CLI and `expo start`.
+
+## Reproduce the benchmarks from this repo
+
+`bench/expo-app-54*` are Expo SDK 54 apps (expo-router + Reanimated) with the plugin wired
+in. Prerequisites: Node ≥ 20, Bun ≥ 1.2 (for the thin server), and Expo Go / a simulator.
 
 ```bash
 cd bench/expo-app-54
@@ -28,7 +45,7 @@ npx expo start --port 8082
 node ../../src/jetplane-stats.mjs   # hit-rate for the last bundle (reset with: … reset)
 ```
 
-## 2. Thin, no-Metro dev server + HMR
+## Thin, no-Metro dev server + HMR (experimental)
 
 Capture a bundle once (fast — warm cache), then serve it from the thin server:
 
@@ -44,7 +61,7 @@ Scan the QR in Expo Go (or `exp://localhost:8091` on the simulator). Then edit
 `bench/expo-app-54/app/(tabs)/index.tsx` and save — the screen hot-reloads via React
 Refresh, served entirely from the thin process.
 
-## 3. Run the benchmarks
+## Run the benchmarks
 
 ```bash
 # Metro vs Vite vs Next memory + Metro's cold-bundle spike
@@ -71,7 +88,8 @@ npm run dev     # http://localhost:3000
 Next.js + shadcn (radix-ui) + Tailwind. The interactive benchmark chart is
 `components/benchmark-chart.tsx`.
 
-## Caveat
+## Notes
 
-Some configs (`metro.config.js`, `jetplane-serve-thin.ts`) contain absolute paths specific to
-the author's machine. Parameterize them before running elsewhere.
+- The plugin (`jetplane/transformer`) is Node-only and ships in the published package. The
+  thin dev server and HMR are experimental and run under [Bun](https://bun.sh).
+- The shared cache lives under `~/.jetplane`; delete it to reset.

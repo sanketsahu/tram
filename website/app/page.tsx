@@ -46,27 +46,55 @@ export default function Home() {
         {/* hero */}
         <section className="flex flex-col items-center py-20 text-center sm:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-brand" /> Research · open source
+            <span className="size-1.5 rounded-full bg-brand" /> Open source · MIT
           </span>
           <h1 className="mt-6 max-w-4xl text-balance text-4xl font-bold tracking-tight sm:text-6xl">
             Run dozens of Expo dev servers <span className="text-brand">on one machine</span>
           </h1>
-          <p className="mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
-            jetplane gives React Native a cross-project transform cache and a thin, no-Metro dev
-            server — so each environment costs about <span className="text-foreground">40 MB</span> instead
-            of Metro’s ~325 MB idle / ~2 GB cold. Live HMR included.
+          <p className="mt-5 text-base font-medium text-foreground/90">
+            A Metro plugin and a lightweight dev server for Expo &amp; React Native.
+          </p>
+          <p className="mt-4 max-w-2xl text-pretty text-lg text-muted-foreground">
+            Drop one line into <code className="text-foreground">metro.config.js</code> and every
+            same-dep project shares one transform cache — so cold bundles stop re-transforming
+            <code className="text-foreground"> node_modules</code>. Each dev environment costs about{' '}
+            <span className="text-foreground">40 MB</span> instead of Metro’s ~325 MB idle / ~2 GB cold.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="bg-[#2563eb] text-white hover:bg-[#1d4ed8]">
-              <Link href="/docs">Read the docs</Link>
+              <Link href="/docs#quick-start">Quick start</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <a href="https://github.com/sanketsahu/jetplane">Star on GitHub</a>
             </Button>
           </div>
           <code className="mt-8 rounded-lg border border-border bg-card/50 px-4 py-2.5 font-mono text-sm text-brand">
-            jetplane dev
+            npm&nbsp;i&nbsp;jetplane
           </code>
+        </section>
+
+        {/* quick start */}
+        <section id="quick-start" className="scroll-mt-20 pb-16">
+          <div className="mx-auto mb-8 max-w-2xl text-center">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Quick start</h2>
+            <p className="mt-3 text-muted-foreground">
+              Add the transform cache to an existing Expo project — no workflow change, keep using{' '}
+              <code className="text-foreground">expo start</code>.
+            </p>
+          </div>
+          <div className="mx-auto max-w-2xl overflow-x-auto rounded-xl border border-border bg-card/50 p-5 font-mono text-sm leading-relaxed">
+            <div><span className="text-muted-foreground select-none"># 1. install</span></div>
+            <div className="text-foreground">npm install jetplane</div>
+            <div className="mt-3"><span className="text-muted-foreground select-none"># 2. wire it into metro.config.js (creates or tells you the 2 lines)</span></div>
+            <div className="text-foreground">npx jetplane init</div>
+            <div className="mt-3"><span className="text-muted-foreground select-none"># 3. run your app as usual — now cross-project cached</span></div>
+            <div className="text-foreground">npx expo start</div>
+          </div>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-muted-foreground">
+            <code className="text-foreground">jetplane init</code> adds{' '}
+            <code className="text-brand">config.transformerPath = require.resolve(&apos;jetplane/transformer&apos;)</code>{' '}
+            to your Metro config. That&apos;s the whole integration for the plugin mode.
+          </p>
         </section>
 
         {/* benchmark — lead with the proof */}
@@ -129,7 +157,7 @@ export default function Home() {
 
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-          <span>jetplane — research WIP. Not affiliated with Meta, Expo, or the React Native team.</span>
+          <span>jetplane — open source (MIT). Not affiliated with Meta, Expo, or the React Native team.</span>
           <div className="flex items-center gap-5">
             <Link href="/docs" className="hover:text-foreground">Docs</Link>
             <a href="https://github.com/sanketsahu/jetplane" className="hover:text-foreground">GitHub</a>

@@ -1,8 +1,11 @@
-# Jetplane
+# jetplane
 
-Research toward a low-footprint dev/bundling toolchain for **Expo/React Native** (and
-Vite), built for running **many dev environments per machine** in a cloud fleet — where
-Metro's memory and cold-bundle cost dominate.
+**A Metro plugin and a lightweight dev server for Expo & React Native** — built for
+running many dev environments per machine. Drop one line into `metro.config.js` and every
+same-dep project shares one transform cache, so cold bundles stop re-transforming
+`node_modules`. Each dev environment costs ~40 MB instead of Metro's ~325 MB idle / ~2 GB cold.
+
+Open source (MIT) · on npm as [`jetplane`](https://www.npmjs.com/package/jetplane).
 
 The core idea, validated end-to-end on a real device:
 
@@ -14,13 +17,32 @@ The core idea, validated end-to-end on a real device:
 - **Serve a pre-built bundle from a thin, no-Metro process** (`mmap`'d), with **HMR**
   reconstructed from parsing the bundle + Metro's HMR protocol.
 
-## Install
+## Quick start
+
+Add jetplane to an existing Expo project (SDK 54+, Node 20+). No workflow change — keep
+using `expo start`.
 
 ```bash
-npm i jetplane          # (publishing soon)
+npm install jetplane
 npx jetplane init       # wires the transform cache into metro.config.js
 npx expo start          # your normal flow — now cross-project cached
 ```
+
+`jetplane init` adds two lines to your Metro config:
+
+```js
+// metro.config.js
+const { getDefaultConfig } = require('expo/metro-config')
+
+const config = getDefaultConfig(__dirname)
+config.transformerPath = require.resolve('jetplane/transformer') // the Metro plugin
+config.cacheStores = []                                          // jetplane owns caching
+
+module.exports = config
+```
+
+The first bundle populates a shared, content-addressed cache under `~/.jetplane`; every
+other same-dep project (and every restart) reuses it.
 
 ## Is it a drop-in replacement?
 
@@ -112,9 +134,10 @@ server, **live HMR working**.
 
 ## Status
 
-Research WIP. The measurements and the on-device HMR demo are real; productionization
-(clean `jetplane build`/`serve`/`dev` commands, shared-service HMR transforms, full
-import-change handling, cache-vary for env) is ongoing. Absolute paths in some configs
-are machine-specific to the author's setup.
+Open source (MIT), on npm. **Shipping today:** the Metro plugin (cross-project transform
+cache), drop-in with `expo start`, measured at a 99.9% cross-project hit-rate on device.
+**Experimental:** the thin no-Metro dev server + HMR. **Roadmap:** multi-level new-dep +
+deletion handling in HMR, shared-service HMR transforms, the 0.2% worklet
+path-normalization gap, app-layer cache-vary for env, and a first-class `jetplane serve`.
 
-Not affiliated with or endorsed by Meta, Expo, or the React Native team.
+Contributions welcome. Not affiliated with or endorsed by Meta, Expo, or the React Native team.
