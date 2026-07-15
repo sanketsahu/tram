@@ -1,0 +1,44 @@
+# dependencies (reinstallable; 2.6 GB)
+node_modules/
+node_modules
+.pnp
+.pnp.js
+
+# throwaway cross-project test copies (symlinked node_modules; regenerable)
+bench/heavy-app-copy/
+bench/vite-app-copy/
+bench/expo-app-copy2/
+
+# build output / caches
+dist/
+build/
+.expo/
+.vite/
+.next/
+.turbo/
+web-build/
+*.pack
+*.tsbuildinfo
+
+# native
+ios/
+android/
+*.xcworkspace
+*.keystore
+
+# tram artifacts (live under ~/.tram, but ignore any local copies)
+.tram/
+tstore/
+store/
+store-*/
+base-image*.pack
+
+# logs / os
+*.log
+.DS_Store
+npm-debug.log*
+yarn-error.log*
+
+# env
+.env*.local
+.env

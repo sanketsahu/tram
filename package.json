@@ -1,0 +1,13 @@
+{
+  "name": "tram",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "One tool to install and run dev servers, backed by a shared content-addressed cache.",
+  "bin": {
+    "tram": "./src/cli.ts"
+  },
+  "scripts": {
+    "tram": "bun src/cli.ts"
+  }
+}
