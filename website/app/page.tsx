@@ -8,9 +8,9 @@ import { SiteFooter } from '@/components/site-footer'
 
 const STATS = [
   { value: '99.9%', label: 'cross-project cache hit-rate', sub: '1,440 / 1,442 modules · 3 separate projects' },
-  { value: '4.3×', label: 'faster bundles', sub: '3,205 ms → 753 ms (cold → cross-project warm)' },
-  { value: '~40 MB', label: 'per dev server', sub: 'thin, no Metro · vs Metro ~325 MB idle' },
-  { value: '0.38 ms', label: 'warm packed boot', sub: 'vs Metro ~3,130 ms cold bundle' },
+  { value: '4.3×', label: 'faster warm bundles', sub: '3,205 ms cold → 753 ms with a warm cross-project cache' },
+  { value: '~40 MB', label: 'per dev server', sub: 'thin serve of a pre-built bundle · vs Metro ~325 MB idle' },
+  { value: '0.38 ms', label: 'warm packed boot', sub: 'serving an already-built bundle — the build ran earlier' },
 ]
 
 const FEATURES = [
@@ -69,11 +69,14 @@ export default function Home() {
           {/* benchmark */}
           <section id="benchmark" className="scroll-mt-24 border-t border-border/60 py-20">
             <div className="mx-auto mb-10 max-w-2xl text-center">
-              <Eyebrow>Benchmark</Eyebrow>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight">Measured against Metro, same machine</h2>
+              <Eyebrow>Benchmark · warm path</Eyebrow>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">Memory and warm starts, measured honestly</h2>
               <p className="mt-3 text-muted-foreground">
-                Metro’s real cost isn’t idle — it’s the cold-bundle spike, and it scales linearly with
-                zero sharing across servers.
+                These are <span className="text-foreground">warm-path</span> numbers. jetplane isn’t racing
+                Metro on a cold build — it moves the heavy build to pre-warm time, then serves the
+                pre-built bundle cheaply and shares one transform cache across projects. It complements
+                Metro rather than competing with it: the steady state gets cheap, and the cold-bundle
+                spike that scales linearly across servers goes away.
               </p>
             </div>
             <BenchmarkChart />

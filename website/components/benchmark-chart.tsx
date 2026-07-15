@@ -148,8 +148,10 @@ export function BenchmarkChart() {
       </div>
 
       <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-        jetplane in colour; Metro and the web dev servers muted for context. Linear scale — Metro’s
-        cold bundle (~2,018 MB) runs off the axis (torn end) so the single-process servers stay
+        jetplane in colour; Metro and the web dev servers muted for context. jetplane’s bar is a
+        <em> warm serve</em> of a pre-built bundle — the heavy build ran once at pre-warm time — so
+        this is a footprint comparison, not a like-for-like cold build against Metro. Linear scale —
+        Metro’s cold bundle (~2,018 MB) runs off the axis (torn end) so the single-process servers stay
         comparable. Resident memory of the whole dev-server process tree (<code>ps</code> RSS),
         Apple&nbsp;Silicon · macOS&nbsp;15 ·{' '}
         <a className="underline decoration-border underline-offset-2 hover:text-foreground" href="https://github.com/sanketsahu/jetplane/blob/main/bench/RESULTS.md">
