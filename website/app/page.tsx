@@ -50,7 +50,7 @@ export default function Home() {
             </h1>
             <p className="mt-6 text-lg text-muted-foreground">
               jetplane is a <span className="text-foreground">Metro plugin</span> and a{' '}
-              <span className="text-foreground">lightweight dev server</span> for Expo &amp; React
+              <span className="text-foreground">lightweight dev server</span>{' '}for Expo &amp; React
               Native. Every same-dep project shares one transform cache, so each environment costs
               about <span className="text-foreground">40 MB</span> — not Metro’s ~325 MB idle / ~2 GB cold.
             </p>
@@ -58,10 +58,23 @@ export default function Home() {
               <Link href="/docs#quick-start" className={BTN_PRIMARY}>Get started</Link>
               <a href="https://github.com/sanketsahu/jetplane" className={BTN_OUTLINE}>Star on GitHub</a>
             </div>
-            <div className="mt-8 inline-flex items-center gap-2 rounded-lg border border-border bg-card/50 px-4 py-2.5 font-mono text-sm">
-              <span className="select-none text-muted-foreground">$</span>
-              <span className="text-brand">npm install jetplane</span>
+            <div className="mt-8 w-full max-w-lg space-y-2 rounded-xl border border-border bg-card/50 p-4 text-left font-mono text-sm">
+              <div className="flex gap-2">
+                <span className="select-none text-muted-foreground">$</span>
+                <span><span className="text-brand">npm install</span> jetplane</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="select-none text-muted-foreground">$</span>
+                <span>
+                  <span className="text-brand">npx jetplane</span> dev{' '}
+                  <span className="hidden text-muted-foreground sm:inline"># set up + build + serve — one command</span>
+                </span>
+              </div>
             </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Just want the cross-project cache? Run <code className="text-foreground">jetplane init</code> and keep using{' '}
+              <code className="text-foreground">expo start</code>.
+            </p>
           </div>
         </section>
 

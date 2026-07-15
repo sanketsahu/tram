@@ -31,7 +31,7 @@ module.exports = config;
 `
 
 // 1. ensure metro.config.js wires in the plugin
-function ensureConfig(dir) {
+export function ensureConfig(dir) {
   const cfg = path.join(dir, 'metro.config.js')
   if (!fs.existsSync(cfg)) { fs.writeFileSync(cfg, DEFAULT_CONFIG); log('created metro.config.js with the jetplane plugin'); return }
   let s = fs.readFileSync(cfg, 'utf8')
@@ -113,6 +113,16 @@ function serveThin(dir, port, imageDir) {
   child.on('exit', (c) => process.exit(c ?? 0))
 }
 
+// `jetplane serve` — thin server only. Assumes the project is already set up (plugin
+// wired, deps installed); builds the bundle if it's missing, then serves it.
+export async function serve({ dir = process.cwd(), port = 8091 } = {}) {
+  log(`serving ${dir}`)
+  const imageDir = await ensureBundle(dir)
+  serveThin(dir, port, imageDir)
+}
+
+// `jetplane dev` (alias `start`) — the unified one-liner for a fresh project:
+// wire the plugin, install deps, build the bundle once, then serve it.
 export async function start({ dir = process.cwd(), port = 8091 } = {}) {
   log(`starting in ${dir}`)
   ensureConfig(dir)

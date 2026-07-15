@@ -56,8 +56,8 @@ export default function Docs() {
             Add jetplane to an existing Expo project. No workflow change — you keep using{' '}
             <code>expo start</code>.
           </P>
-          <Code>{`# 1. install
-npm install jetplane
+          <Code>{`# 1. install as a dev dependency (Metro resolves the plugin from here)
+npm install -D jetplane
 
 # 2. wire it into metro.config.js
 #    (creates the file, or prints the 2 lines to add if you already have one)
@@ -157,13 +157,20 @@ module.exports = config`}</Code>
             Beyond the plugin, jetplane can serve a pre-built bundle from a ~40 MB no-Metro process
             with live HMR — for running many environments per machine. One command sets it up:
           </P>
-          <Code>{`npx jetplane start`}</Code>
+          <Code>{`npx jetplane dev`}</Code>
           <P>
-            <code>jetplane start</code> (1) ensures the plugin is in your{' '}
-            <code>metro.config.js</code>, (2) installs dependencies if needed, (3) builds a
-            device-bootable bundle once (running Metro a single time), then (4) serves it from the
-            thin, no-Metro server and prints a QR for Expo Go — edit <code>app/(tabs)/index.tsx</code>{' '}
-            and it hot-reloads. Requires Bun; it replaces the dev-server role, not the Expo CLI.
+            <code>jetplane dev</code> is the unified one-liner for a fresh project: it (1) ensures the
+            plugin is in your <code>metro.config.js</code>, (2) installs dependencies if needed, (3)
+            builds a device-bootable bundle once (running Metro a single time), then (4) serves it from
+            the thin, no-Metro server and prints a QR for Expo Go — edit{' '}
+            <code>app/(tabs)/index.tsx</code> and it hot-reloads. Requires Bun; it replaces the
+            dev-server role, not the Expo CLI. (<code>jetplane start</code> is an alias.)
+          </P>
+          <P>
+            The three commands, from least to most: <code>jetplane init</code> just wires the cache
+            into your config; <code>jetplane serve</code> runs the thin server for a project that’s
+            already set up; <code>jetplane dev</code> does the whole fresh-project setup and then
+            serves. Running <code>jetplane</code> with no argument prints help.
           </P>
 
           <H id="benchmark">Benchmark methodology</H>
