@@ -24,11 +24,29 @@ const has = (cmd) => { try { execSync(`command -v ${cmd}`, { stdio: 'ignore' });
 const DEFAULT_CONFIG = `const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
+// jetplane wraps whatever transformer is already configured (here Expo's default) so its
+// behavior is preserved — jetplane only adds a cross-project cache around it.
+config.transformer.upstreamTransformerPath = config.transformerPath;
 config.transformerPath = require.resolve('jetplane/transformer');
 config.cacheStores = [];
 
 module.exports = config;
 `
+
+// The wiring appended before module.exports. Binds the FINAL exported config to a temp
+// first, so it works whether the export is a bare identifier (module.exports = config)
+// or a call that builds the final config (module.exports = withNativeWind(config, ...)).
+// Capturing the existing transformerPath as the upstream is what keeps NativeWind's .css
+// handling (and Expo's asset worker) working — jetplane delegates to it.
+function wiringBlock(expr) {
+  return `const __jetplaneConfig = ${expr};
+__jetplaneConfig.transformer = __jetplaneConfig.transformer || {};
+__jetplaneConfig.transformer.upstreamTransformerPath = __jetplaneConfig.transformerPath;
+__jetplaneConfig.transformerPath = require.resolve('jetplane/transformer');
+__jetplaneConfig.cacheStores = [];
+module.exports = __jetplaneConfig;
+`
+}
 
 // 1. ensure metro.config.js wires in the plugin
 export function ensureConfig(dir) {
@@ -36,14 +54,17 @@ export function ensureConfig(dir) {
   if (!fs.existsSync(cfg)) { fs.writeFileSync(cfg, DEFAULT_CONFIG); log('created metro.config.js with the jetplane plugin'); return }
   let s = fs.readFileSync(cfg, 'utf8')
   if (s.includes('jetplane/transformer')) { log('plugin already in metro.config.js'); return }
-  const m = s.match(/module\.exports\s*=\s*([A-Za-z_$][\w$]*)/)
-  if (m) {
-    const v = m[1]
-    s = s.replace(m[0], `${v}.transformerPath = require.resolve('jetplane/transformer');\n${v}.cacheStores = [];\n\n${m[0]}`)
+  const idx = s.lastIndexOf('module.exports')
+  const eq = idx > -1 ? s.indexOf('=', idx) : -1
+  if (eq > -1) {
+    let expr = s.slice(eq + 1).trim()
+    // strip a trailing semicolon + any trailing whitespace/newlines on the statement
+    if (expr.endsWith(';')) expr = expr.slice(0, -1).trim()
+    s = s.slice(0, idx) + wiringBlock(expr)
     fs.writeFileSync(cfg, s)
     log('added the jetplane plugin to metro.config.js')
   } else {
-    log("could not auto-edit metro.config.js — add:\n  config.transformerPath = require.resolve('jetplane/transformer')\n  config.cacheStores = []")
+    log("could not auto-edit metro.config.js — before module.exports add:\n  config.transformer.upstreamTransformerPath = config.transformerPath;\n  config.transformerPath = require.resolve('jetplane/transformer');\n  config.cacheStores = [];")
   }
 }
 

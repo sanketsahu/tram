@@ -42,6 +42,9 @@ const config = getDefaultConfig(__dirname);
 
 // jetplane: cross-project transform cache. Same module transforms once and is reused
 // across every same-dep project (which Metro's own root-dependent cache cannot do).
+// Wrap whatever transformer is already configured (Expo's default here, or NativeWind's
+// when withNativeWind runs) so their behavior is preserved — jetplane only caches around it.
+config.transformer.upstreamTransformerPath = config.transformerPath;
 config.transformerPath = require.resolve('jetplane/transformer');
 config.cacheStores = []; // jetplane owns caching
 
@@ -51,7 +54,8 @@ module.exports = config;
 function init() {
   const target = path.join(process.cwd(), 'metro.config.js')
   if (existsSync(target)) {
-    console.error(`metro.config.js already exists. Add these two lines to it:\n
+    console.error(`metro.config.js already exists. Add these lines just before your module.exports (use the final config object — e.g. the return of withNativeWind):\n
+  config.transformer.upstreamTransformerPath = config.transformerPath;
   config.transformerPath = require.resolve('jetplane/transformer');
   config.cacheStores = [];\n`)
     process.exit(1)
