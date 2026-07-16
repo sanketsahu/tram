@@ -9,6 +9,7 @@
 // on plain Node (that's what `jetplane init` does).
 
 import { spawn, execSync } from 'node:child_process'
+import net from 'node:net'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
@@ -20,6 +21,19 @@ const HOME = os.homedir()
 const log = (m) => console.log(`jetplane: ${m}`)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const has = (cmd) => { try { execSync(`command -v ${cmd}`, { stdio: 'ignore' }); return true } catch { return false } }
+
+// Ask the OS for a free port (bind :0, read the assigned port, release). We never claim a
+// hardcoded port or kill whatever holds it — several projects can build concurrently.
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer()
+    srv.once('error', reject)
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address()
+      srv.close(() => resolve(port))
+    })
+  })
+}
 
 const DEFAULT_CONFIG = `const { getDefaultConfig } = require('expo/metro-config');
 
@@ -76,16 +90,32 @@ function ensureInstalled(dir) {
   execSync(inst, { cwd: dir, stdio: 'inherit' })
 }
 
-function lockHash(dir) {
+// Cache key for a built bundle IMAGE. The cross-project transform cache is keyed by source
+// bytes (shared across projects — that's the point). A bundle image is different: it contains
+// THIS app's own source, so it must be keyed per project. Keying it on the lockfile alone
+// (lockHash) collides for two projects with identical deps — the second serves the first's
+// app. So mix in the project path, bundle-affecting config, and the app source tree; editing
+// app code also invalidates the image, so a fresh `serve` rebuilds instead of serving stale.
+function imageKey(dir) {
+  const h = crypto.createHash('sha256')
+  h.update(path.resolve(dir))
+  const add = (p) => { try { if (fs.statSync(p).isFile()) h.update(fs.readFileSync(p)) } catch {} }
   for (const f of ['bun.lock', 'bun.lockb', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock']) {
-    const p = path.join(dir, f)
-    if (fs.existsSync(p)) return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex').slice(0, 16)
+    const p = path.join(dir, f); if (fs.existsSync(p)) { add(p); break }
   }
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'))
-    const deps = { ...pkg.dependencies, ...pkg.devDependencies }
-    return crypto.createHash('sha256').update(Object.keys(deps).sort().map((k) => k + deps[k]).join()).digest('hex').slice(0, 16)
-  } catch { return crypto.createHash('sha256').update(dir).digest('hex').slice(0, 16) }
+  for (const f of ['app.json', 'app.config.js', 'app.config.ts', 'metro.config.js', 'babel.config.js', 'global.css', 'tailwind.config.js']) add(path.join(dir, f))
+  const walk = (d) => {
+    let ents
+    try { ents = fs.readdirSync(d, { withFileTypes: true }) } catch { return }
+    for (const e of ents.sort((a, b) => (a.name < b.name ? -1 : 1))) {
+      if (e.name.startsWith('.') || e.name === 'node_modules') continue
+      const p = path.join(d, e.name)
+      if (e.isDirectory()) walk(p)
+      else { h.update(path.relative(dir, p)); add(p) }
+    }
+  }
+  for (const s of ['app', 'components', 'src', 'constants', 'hooks']) walk(path.join(dir, s))
+  return h.digest('hex').slice(0, 16)
 }
 
 async function get(url, ms, headers = {}) {
@@ -94,25 +124,41 @@ async function get(url, ms, headers = {}) {
   catch { return { ok: false, body: '' } } finally { clearTimeout(t) }
 }
 
-// 3. build the device-bootable bundle by capturing it from Metro once (cached per lockHash)
+// 3. build the device-bootable bundle by capturing it from Metro once (cached per project +
+// app source via imageKey — NOT per lockfile, which would collide across same-dep projects)
 async function ensureBundle(dir, platform = 'ios') {
-  const imageDir = path.join(HOME, '.jetplane', 'images', lockHash(dir))
+  const imageDir = path.join(HOME, '.jetplane', 'images', imageKey(dir))
   const complete = ['main.ios.bundle', 'manifest-multipart.bin', 'index.html', 'main.web.bundle']
   if (complete.every((f) => fs.existsSync(path.join(imageDir, f)))) {
     log(`bundle cached (${path.relative(HOME, imageDir)})`); return imageDir
   }
   fs.mkdirSync(imageDir, { recursive: true })
   log('building bundle (running Metro once — this is the one-time build)...')
-  const port = 8099
-  try { execSync(`lsof -tiTCP:${port} -sTCP:LISTEN | xargs kill -9`, { stdio: 'ignore' }) } catch {}
-  const metro = spawn('npx', ['expo', 'start', '--port', String(port)], { cwd: dir, env: { ...process.env, CI: '1' }, detached: true, stdio: 'ignore' })
-  const kill = () => { try { process.kill(-metro.pid, 'SIGKILL') } catch {} }
-  try {
-    const base = `http://localhost:${port}/`
+
+  // Bring up a temporary Metro on an OS-assigned free port. If it doesn't come up (e.g. the
+  // port was grabbed between probe and bind, or another build raced us), retry on a fresh
+  // port instead of stomping on whatever is listening.
+  let metro, port, base
+  for (let attempt = 1; ; attempt++) {
+    port = await freePort()
+    metro = spawn('npx', ['expo', 'start', '--port', String(port)], { cwd: dir, env: { ...process.env, CI: '1' }, detached: true, stdio: 'ignore' })
+    base = `http://localhost:${port}/`
     const dl = Date.now() + 180000
     let up = false
-    while (Date.now() < dl) { const r = await get(base + 'status', 2000); if (r.ok && r.body.includes('running')) { up = true; break } await sleep(500) }
-    if (!up) throw new Error('Metro did not start')
+    while (Date.now() < dl) {
+      if (metro.exitCode != null) break // metro died (port taken / start failed)
+      const r = await get(base + 'status', 2000)
+      if (r.ok && r.body.includes('running')) { up = true; break }
+      await sleep(500)
+    }
+    if (up) break
+    try { process.kill(-metro.pid, 'SIGKILL') } catch {}
+    if (attempt >= 3) throw new Error('Metro did not start (temporary build server)')
+    log(`build server didn't come up on :${port} — retrying on a fresh port...`)
+    await sleep(500)
+  }
+  const kill = () => { try { process.kill(-metro.pid, 'SIGKILL') } catch {} }
+  try {
     const json = (await get(base, 20000, { 'expo-platform': platform, Accept: 'application/expo+json,application/json' })).body
     fs.writeFileSync(path.join(imageDir, 'manifest.json'), json)
     const multi = (await get(base, 20000, { 'expo-platform': platform, 'expo-protocol-version': '1', Accept: 'multipart/mixed,application/expo+json,application/json' })).body

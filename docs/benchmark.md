@@ -33,12 +33,14 @@ shown clipped (†) — on a linear axis it would flatten everything else.
 
 | project | modules | bundle time | hit-rate |
 |---|---:|---:|---:|
-| A (cold — builds cache) | 1,436 | 3,205 ms | — |
-| B | 1,434 | 928 ms | — |
-| **C** (instrumented) | 1,415 | **753 ms** | **1,440 / 1,442 = 99.9%** |
+| A (cold — builds cache) | 1,442 | 4,973 ms | — |
+| B | 1,442 | 1,710 ms | **1,440 / 1,442 = 99.9%** |
+| **C** | 1,442 | **1,799 ms** | **1,440 / 1,442 = 99.9%** |
 
-The 4.3× speedup (3,205 → 753 ms) is *explained by the hit count*: 99.9% of transforms
-never ran. Only the modules that genuinely differ in C were misses.
+The ~2.8× speedup (4,973 → 1,799 ms) is *explained by the hit count*: 99.9% of transforms
+never ran. Only the 2 modules that genuinely differ per project were misses. Each app is wired
+the way `jetplane init` writes `metro.config.js` (jetplane's worker chained over Expo's default
+transformer) — the path that must stay root-independent. Reproduce: `node bench/xproject-hitrate.mjs`.
 
 ## Bounded memory & boot (vendor cache prototype, 995 real modules)
 

@@ -102,14 +102,16 @@ Next.js (web)
 
 | project | modules | bundle time | cache hit-rate |
 |---|---:|---:|---:|
-| A (cold — builds the cache) | 1,436 | 3,205 ms | — |
-| B | 1,434 | 928 ms | — |
-| **C** (instrumented) | 1,415 | **753 ms** | **1,440 / 1,442 = 99.9%** |
+| A (cold — builds the cache) | 1,442 | 4,973 ms | — |
+| B | 1,442 | 1,710 ms | **1,440 / 1,442 = 99.9%** |
+| **C** | 1,442 | **1,799 ms** | **1,440 / 1,442 = 99.9%** |
 
-The **4.3× speedup** (3,205 → 753 ms) is a **warm-cache** result — the first project (A) pays
+The **~2.8× speedup** (4,973 → 1,799 ms) is a **warm-cache** result — the first project (A) pays
 the full cold cost to build the cache; later same-dep projects reuse it, so 99.9% of transforms
-never run. Warm packed boot is **0.38 ms** — that's serving an already-built bundle, not
-re-bundling, so it isn't a like-for-like race with Metro's cold build.
+never run. Only the 2 modules that genuinely differ per project are misses. Warm packed boot is
+**0.38 ms** — that's serving an already-built bundle, not re-bundling, so it isn't a like-for-like
+race with Metro's cold build. Reproduce with [`bench/xproject-hitrate.mjs`](bench/xproject-hitrate.mjs);
+each app is wired the way `jetplane init` writes `metro.config.js`.
 
 > **On transparency:** jetplane isn't trying to beat Metro at cold bundling. It moves the heavy
 > build to pre-warm time, then makes the warm/steady state cheap (memory and reuse) and shares one
