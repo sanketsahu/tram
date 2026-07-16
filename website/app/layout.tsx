@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 // Set NEXT_PUBLIC_SITE_URL to the deployed origin so OG/canonical URLs are absolute.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://jetplane.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://sanketsahu.github.io/jetplane";
 const TITLE = "jetplane — low-footprint Expo/React Native dev servers";
 const DESCRIPTION =
   "Run many Expo/React Native dev environments per machine. Cross-project transform cache, thin no-Metro dev server, live HMR — ~40 MB per server vs Metro's ~325 MB idle / ~2 GB cold.";

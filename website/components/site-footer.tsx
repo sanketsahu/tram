@@ -77,6 +77,13 @@ export function SiteFooter() {
               Sanket Sahu
             </a>
           </p>
+          <p>
+            Looking for an AI-native product team?{' '}
+            <a href="https://geekyants.com" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4 hover:text-brand">
+              GeekyAnts
+            </a>{' '}
+            offers AI consulting and engineering for startups and enterprises.
+          </p>
           <div className="flex items-center gap-5">
             <Link href="/docs" className="hover:text-foreground">Docs</Link>
             <a href="https://www.npmjs.com/package/jetplane" className="hover:text-foreground">npm</a>
