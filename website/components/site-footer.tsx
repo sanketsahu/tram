@@ -1,6 +1,11 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
+// Root-relative assets in public/ need the deploy subpath prepended manually —
+// next/link and next/image add basePath automatically, a raw <img src> does not.
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ''
+const asset = (p: string) => (p.startsWith('/') ? BASE_PATH + p : p)
+
 // Family-site logos are loaded from their own domains, so they stay in sync when those
 // sites update. RapidNative has no published logo URL, so it stays vendored.
 const RELATED = [
@@ -45,7 +50,7 @@ export function SiteFooter() {
                 className="group flex items-start gap-4 rounded-xl border border-border bg-card/40 p-4 transition-colors hover:border-brand/40"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.logo} alt={`${p.name} logo`} width={36} height={36} className="size-9 shrink-0 rounded-md" />
+                <img src={asset(p.logo)} alt={`${p.name} logo`} width={36} height={36} className="size-9 shrink-0 rounded-md" />
                 <div className="min-w-0">
                   <span className="inline-flex items-center gap-1 font-semibold text-foreground group-hover:text-brand">
                     {p.name}
