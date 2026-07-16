@@ -62,7 +62,7 @@ async function pushUpdate(absFile: string) {
     const m = platform === 'web' ? webMaps : maps
     if (!m) continue
     try {
-      const { modified, added } = await makeUpdate(projectDir, absFile, m, `http://${lan}:${port}`, platform)
+      const { modified, added } = await makeUpdate(projectDir, absFile, m, publicOrigin(), platform)
       rev++
       const start = JSON.stringify({ type: 'update-start', body: { isInitialUpdate: false } })
       const upd = JSON.stringify({ type: 'update', body: { revisionId: String(rev), added, modified: [modified], deleted: [] } })
@@ -87,12 +87,34 @@ for (const dir of watchDirs) {
   })
 }
 
+// The origin the device/browser must use to reach us. In plain local dev this is the LAN
+// host:port over http. Behind a reverse proxy (e.g. Cloudflare terminating TLS) the public
+// origin differs from what we bind — so we resolve it, highest priority first:
+//   1. EXPO_DEV_SERVER_ORIGIN         — a full origin, e.g. https://tunnel.example.com (wins outright)
+//   2. REACT_NATIVE_PACKAGER_HOSTNAME — host[:port] (Metro's own env var); scheme from the proxy or http
+//   3. X-Forwarded-Proto / X-Forwarded-Host — set by the proxy, per request
+//   4. the Host header over http      — plain local dev
+// EXPO_DEV_SERVER_ORIGIN is the one to set for a fixed HTTPS proxy: it also fixes the
+// HMR base below (which has no request context to read forwarded headers from).
+const ENV_ORIGIN = (process.env.EXPO_DEV_SERVER_ORIGIN || '').trim().replace(/\/+$/, '')
+const ENV_HOST = (process.env.REACT_NATIVE_PACKAGER_HOSTNAME || '').trim()
+
+function publicOrigin(req?: Request): string {
+  if (ENV_ORIGIN) return ENV_ORIGIN
+  const h = req?.headers
+  const fwdProto = h?.get('x-forwarded-proto')?.split(',')[0]?.trim()
+  const fwdHost = h?.get('x-forwarded-host')?.split(',')[0]?.trim()
+  const host = ENV_HOST || fwdHost || h?.get('host') || `${lan}:${port}`
+  if (/^https?:\/\//.test(host)) return host.replace(/\/+$/, '') // host already carries a scheme
+  return `${fwdProto || 'http'}://${host}`
+}
+
 // The captured manifest bakes the *build* server's own URL (e.g. http://127.0.0.1:8099,
 // the temporary capture Metro) into launchAsset + assets. Rewrite ANY localhost/127.0.0.1
-// port to whatever host the client actually reached us on, so the bundle + asset URLs
-// point back at this thin server (works for simulator localhost and a LAN phone).
-const rewriteHost = (s: string, host: string) =>
-  s.replace(/http:\/\/(?:127\.0\.0\.1|localhost):\d+/g, `http://${host}`)
+// origin to the public origin above, so the bundle + asset URLs point back at this thin
+// server (simulator localhost, a LAN phone, or a device reaching us through a proxy).
+const rewriteHost = (s: string, origin: string) =>
+  s.replace(/https?:\/\/(?:127\.0\.0\.1|localhost):\d+/g, origin)
 
 // expo-updates stores each loaded manifest in SQLite keyed by (scope_key, commit_time).
 // Our replayed manifest is static, so re-scanning collides (UNIQUE constraint). Give
@@ -121,7 +143,7 @@ const serveOpts = {
   hostname: '0.0.0.0', // reachable from a phone on the LAN
   fetch(req: Request, server: any) {
     const url = new URL(req.url)
-    const host = req.headers.get('host') || `localhost:${port}`
+    const origin = publicOrigin(req)
 
     if (url.pathname === '/hot') { if (server.upgrade(req)) return undefined as any }
     if (url.pathname === '/status') return new Response('packager-status:running')
@@ -147,7 +169,7 @@ const serveOpts = {
     // bundle + asset URLs point back here (works for simulator localhost and LAN phone)
     const accept = req.headers.get('accept') || ''
     if (accept.includes('multipart/mixed') && multipartRaw) {
-      return new Response(rewriteHost(freshen(multipartRaw), host), {
+      return new Response(rewriteHost(freshen(multipartRaw), origin), {
         headers: {
           'content-type': `multipart/mixed; boundary=${boundary}`,
           'expo-protocol-version': '0',
@@ -156,7 +178,7 @@ const serveOpts = {
         },
       })
     }
-    return new Response(rewriteHost(freshen(manifestRaw), host), { headers: { 'content-type': 'application/expo+json', 'cache-control': 'private, max-age=0' } })
+    return new Response(rewriteHost(freshen(manifestRaw), origin), { headers: { 'content-type': 'application/expo+json', 'cache-control': 'private, max-age=0' } })
   },
   websocket: {
     open(ws: any) { clients.add(ws) },
@@ -201,6 +223,10 @@ for (let attempt = 0; ; attempt++) {
 port = server.port
 
 console.log(`jetplane-serve-thin: :${port}  bundle=${(bundle.length / 1048576).toFixed(1)}MB mmap'd  idleRSS=${rssMB()}MB (no Metro)`)
+if (ENV_ORIGIN || ENV_HOST) {
+  console.log(`jetplane: advertising public origin ${publicOrigin()}` +
+    (ENV_ORIGIN ? ' (EXPO_DEV_SERVER_ORIGIN)' : ` (REACT_NATIVE_PACKAGER_HOSTNAME; scheme from X-Forwarded-Proto or http)`))
+}
 
 const ip = lanIP()
 const expUrl = `exp://${ip}:${port}`
