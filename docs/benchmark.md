@@ -4,6 +4,9 @@ All numbers are **resident memory of the whole dev-server process tree** (`ps` R
 **Apple Silicon · macOS 15**, or wall-clock bundle time, measured on the same machine.
 Harnesses are in [`../bench/`](../bench/); this page consolidates the headline results.
 
+The full case-by-case writeup with charts is on the site:
+**<https://sanketsahu.github.io/jetplane/benchmarks>**.
+
 ## Method
 
 - **Memory** is split into two series: **idle** (dev server sitting) and **peak** (Metro
@@ -29,7 +32,7 @@ shown clipped (†) — on a linear axis it would flatten everything else.
 
 † off the axis — a transient cold-bundle spike, not a steady value.
 
-## Cross-project cache (3 separate SDK-54 projects, same deps)
+## Case 1 — Cross-project cache (3 separate SDK-54 projects, same deps)
 
 | project | modules | bundle time | hit-rate |
 |---|---:|---:|---:|
@@ -41,6 +44,35 @@ The ~2.8× speedup (4,973 → 1,799 ms) is *explained by the hit count*: 99.9% o
 never ran. Only the 2 modules that genuinely differ per project were misses. Each app is wired
 the way `jetplane init` writes `metro.config.js` (jetplane's worker chained over Expo's default
 transformer) — the path that must stay root-independent. Reproduce: `node bench/xproject-hitrate.mjs`.
+
+## Case 2 — Installing a new package (incremental cache + thin vs Metro memory)
+
+Three identical apps, shared cache built cold by `proj-a`. `proj-b` installs + imports one unique
+package (`ms`), `proj-c` a different one (`dayjs`). Installing a package does **not** rebuild the
+`node_modules` transform cache — only the new package (plus the app file that imports it) is a miss.
+
+| project | unique pkg | modules | hits | misses | hit-rate | bundle time |
+|---|---|---:|---:|---:|---:|---:|
+| proj-a | — | 1,442 | 0 | 1,442 | — (cold) | 3,122 ms |
+| proj-b | `ms` | 1,443 | 1,440 | **3** | 99.8% | 1,333 ms |
+| proj-c | `dayjs` | 1,443 | 1,440 | **3** | 99.8% | 1,114 ms |
+
+The 3 misses are exactly: the new package (`node_modules/ms/index.js`), the edited screen, and
+expo-router's generated route module (re-hashes because app source changed). No other
+`node_modules` module runs.
+
+Same three projects, **normal Metro dev server vs jetplane thin serve** (memory, MB):
+
+| project | Metro idle | Metro peak | thin idle | thin peak | thin (bun only) |
+|---|---:|---:|---:|---:|---:|
+| proj-a | 654 | **2,965** | 139 | **156** | 108 |
+| proj-b (+ms) | 658 | 1,612 | 140 | 156 | 108 |
+| proj-c (+dayjs) | 657 | 1,561 | 140 | 156 | 108 |
+
+thin serve is flat (~140 idle / 156 peak) regardless of project or added package — it serves a
+pre-built mmap'd bundle, so no transform happens at serve time. Idle ~4.7× lighter; peak ~10×
+(warm) to ~19× (cold) lighter. Caveat: the thin peak is steady-state; a new package triggers a
+one-time image rebuild (a Metro build, ~1.6 GB transient) before settling back to ~108 MB.
 
 ## Bounded memory & boot (vendor cache prototype, 995 real modules)
 

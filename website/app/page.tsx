@@ -102,6 +102,12 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            <div className="mt-8 text-center">
+              <Link href="/benchmarks" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand transition-colors hover:text-brand-hover">
+                See all benchmark cases — cross-project cache, new-package cost, thin vs Metro memory
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
           </section>
 
           {/* how it works */}

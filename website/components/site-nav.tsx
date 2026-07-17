@@ -34,7 +34,7 @@ export function SiteNav() {
           </a>
         </div>
         <div className="flex items-center gap-5 text-sm text-muted-foreground">
-          <Link href="/#benchmark" className="transition-colors hover:text-foreground">Benchmark</Link>
+          <Link href="/benchmarks" className="transition-colors hover:text-foreground">Benchmarks</Link>
           <Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link>
           <a
             href="https://github.com/sanketsahu/jetplane"
