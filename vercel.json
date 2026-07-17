@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://sanketsahu.github.io/jetplane/:path*",
+      "permanent": false
+    }
+  ]
+}
