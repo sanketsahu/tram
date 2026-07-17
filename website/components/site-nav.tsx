@@ -10,14 +10,29 @@ function GitHubIcon() {
   )
 }
 
+// Injected at build time from the root package.json (see next.config.ts) so the
+// badge tracks the published version automatically.
+const VERSION = `v${process.env.NEXT_PUBLIC_JETPLANE_VERSION ?? '0.0.0'}`
+
 export function SiteNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <Logo size={24} />
-          jetplane
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+            <Logo size={24} />
+            jetplane
+          </Link>
+          <a
+            href="https://www.npmjs.com/package/jetplane"
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`jetplane ${VERSION} on npm`}
+            className="hidden rounded-full border border-border/60 bg-card/60 px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+          >
+            {VERSION}
+          </a>
+        </div>
         <div className="flex items-center gap-5 text-sm text-muted-foreground">
           <Link href="/#benchmark" className="transition-colors hover:text-foreground">Benchmark</Link>
           <Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link>
